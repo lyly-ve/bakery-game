@@ -23,18 +23,38 @@ body {
 
 /* ── Rush Banner ── */
 .rush-banner {
-  background: linear-gradient(90deg,#e87a30,#f0b050,#e87a30);
+  background: linear-gradient(90deg,#d05010,#f09020,#e06020,#f09020,#d05010);
   background-size: 300% 100%;
-  animation: rush-bg 2s linear infinite;
-  color: white; padding: 7px 20px;
+  animation: rush-bg 1.2s linear infinite;
+  color: white; padding: 9px 20px;
   display: none; justify-content: center; align-items: center; gap: 18px;
-  font-weight: bold; font-size: 0.95rem;
+  font-weight: bold; font-size: 1rem; letter-spacing: .5px;
+  box-shadow: 0 3px 12px rgba(208,80,16,.4);
 }
 .rush-banner.on { display: flex; }
 @keyframes rush-bg { 0%{background-position:0%} 100%{background-position:300%} }
 .rush-cd {
-  background: rgba(0,0,0,0.22); border-radius: 10px;
-  padding: 2px 10px; font-family: monospace; font-size: 0.95rem;
+  background: rgba(0,0,0,0.28); border-radius: 10px;
+  padding: 2px 12px; font-family: monospace; font-size: 0.95rem;
+  border: 1px solid rgba(255,255,255,.3);
+}
+/* rush-active whole-game highlight */
+.rush-active .cat-area {
+  border-color: #e87a30 !important;
+  animation: rush-border 0.8s ease-in-out infinite alternate;
+}
+@keyframes rush-border {
+  from { box-shadow: 0 0 0 0 rgba(232,122,48,0); }
+  to   { box-shadow: 0 0 16px 5px rgba(232,122,48,.5); }
+}
+.rush-active .header {
+  background: linear-gradient(90deg,#7a4a28,#c05820,#7a4a28) !important;
+  background-size: 200% !important;
+  animation: rush-header 1.5s linear infinite;
+}
+@keyframes rush-header {
+  from { background-position:0% }
+  to   { background-position:200% }
 }
 
 /* ── Header ── */
@@ -158,7 +178,10 @@ body {
   80% { transform: translateY(-6px) scale(1.04); }
   100%{ transform: translateY(0); }
 }
-.moka-svg { image-rendering: pixelated; }
+.moka-img {
+  width: 130px; height: 130px;
+  object-fit: contain;
+}
 .moka-label {
   font-size: 0.72rem; font-weight: bold; color: var(--accent);
   letter-spacing: 1px; background: rgba(255,255,255,.72);
@@ -617,51 +640,8 @@ body {
     <div class="panel cat-area" id="catArea">
       <!-- Siamese pixel cat 모카 -->
       <div class="moka-wrap" id="mokaWrap">
-        <svg class="moka-svg" viewBox="0 0 40 44" width="118" height="130"
-             shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
-          <!-- Left ear (seal) -->
-          <polygon points="4,17 11,17 7.5,5" fill="#3d1608"/>
-          <polygon points="5.5,16 9.5,16 7.5,8" fill="#d06858"/>
-          <!-- Right ear (seal) -->
-          <polygon points="29,17 36,17 32.5,5" fill="#3d1608"/>
-          <polygon points="30.5,16 34.5,16 32.5,8" fill="#d06858"/>
-          <!-- Head cream -->
-          <rect x="7" y="11" width="26" height="18" fill="#f5e0c0"/>
-          <rect x="11" y="9"  width="18" height="4"  fill="#f5e0c0"/>
-          <!-- Siamese face mask (darker) -->
-          <rect x="11" y="21" width="18" height="10" fill="#e0c8a8"/>
-          <!-- Left eye blue -->
-          <rect x="9"  y="14" width="7" height="5" fill="#5ba3d9"/>
-          <rect x="11" y="15" width="3" height="3" fill="#1a1a2e"/>
-          <rect x="9"  y="14" width="2" height="1" fill="#b8e4f8"/>
-          <!-- Right eye blue -->
-          <rect x="24" y="14" width="7" height="5" fill="#5ba3d9"/>
-          <rect x="26" y="15" width="3" height="3" fill="#1a1a2e"/>
-          <rect x="24" y="14" width="2" height="1" fill="#b8e4f8"/>
-          <!-- Nose -->
-          <rect x="18" y="22" width="4" height="3" fill="#e08878"/>
-          <!-- Mouth -->
-          <rect x="17" y="25" width="2" height="1" fill="#c06858"/>
-          <rect x="21" y="25" width="2" height="1" fill="#c06858"/>
-          <!-- Muzzle cheeks cream -->
-          <rect x="11" y="22" width="5" height="4" fill="#f2e4d0"/>
-          <rect x="24" y="22" width="5" height="4" fill="#f2e4d0"/>
-          <!-- Body cream -->
-          <rect x="7"  y="29" width="26" height="13" fill="#f5e0c0"/>
-          <!-- Left paw seal -->
-          <rect x="7"  y="37" width="9" height="7" fill="#3d1608"/>
-          <!-- Right paw seal -->
-          <rect x="24" y="37" width="9" height="7" fill="#3d1608"/>
-          <!-- Tail seal -->
-          <rect x="33" y="26" width="5" height="15" fill="#3d1608"/>
-          <rect x="30" y="39" width="8" height="3"  fill="#3d1608"/>
-          <!-- Left whiskers -->
-          <rect x="0"  y="23" width="9" height="1" fill="#c8a870"/>
-          <rect x="0"  y="26" width="9" height="1" fill="#c8a870"/>
-          <!-- Right whiskers -->
-          <rect x="31" y="23" width="9" height="1" fill="#c8a870"/>
-          <rect x="31" y="26" width="9" height="1" fill="#c8a870"/>
-        </svg>
+        <img class="moka-img" id="mokaImg" src="Mocka.png" alt="모카"
+             onload="removeCatImgBg(this)">
         <div class="moka-label">🐱 모카</div>
       </div>
 
@@ -767,9 +747,12 @@ const CLINES = ['빵 주세요!','냥냥 맛있겠다!','하나만요~','오늘�
 const IDLES  = ['냥~ 오늘도 화이팅!','모닝빵 갓 구웠어요!','어서오세요 냥!','맛있게 드세요~'];
 
 const MAX_FUEL    = 5;
+const MAX_INV     = 500;
 const SHELF_MAX   = 9;
 const SHELF_COST  = 1000;
 const FUEL_DRAIN  = 120; // seconds per pip
+const RAT_MAX     = { partTime:5, baker:3, manager:2 };
+const RAT_TOTAL_MAX = 10;
 
 /* ===== State ===== */
 const S = {
@@ -825,7 +808,12 @@ const TUT_SLIDES = [
   {
     illus: '🎉',
     title: '타이머 끝나면 손님 러쉬타임!',
-    body:  '세션이 끝날 때마다 <b>5분간 러쉬타임</b>이 발동돼요.<br>손님 방문 간격이 절반으로 줄어 빵이 불티나게 팔려요!',
+    body:  '세션이 끝날 때마다 <b>5분간 러쉬타임</b>이 발동돼요.<br>손님 방문 간격이 3배 빨라져 빵이 불티나게 팔려요!',
+  },
+  {
+    illus: '🐭',
+    title: '집중 세션 중에는 빵 굽기가 제한돼요!',
+    body:  '뽀모도로 타이머가 돌아가는 동안 직접 빵을 구울 수 없어요.<br>쥐들한테 맡기고 공부에 집중하세요! 🎓',
   },
   {
     illus: '☕',
@@ -834,13 +822,14 @@ const TUT_SLIDES = [
   },
 ];
 
-const TUT_KEY = 'mocha_bakery_visited';
+const TUT_KEY = 'mocha_bakery_visited_v2';
 let tutIdx = 0;
 
 function openTutorial() {
   tutIdx = 0;
   renderTutSlide();
   document.getElementById('tutOverlay').classList.remove('hidden');
+  document.getElementById('tutReopenBtn').style.display = 'none';
 }
 
 function closeTutorial() {
@@ -895,11 +884,36 @@ function renderTutSlide() {
 }
 
 function checkTutorial() {
-  const visited = localStorage.getItem(TUT_KEY);
-  if (!visited) {
+  localStorage.removeItem('mocha_bakery_visited'); // clear v1 legacy key
+  if (!localStorage.getItem(TUT_KEY)) {
     openTutorial();
   } else {
     document.getElementById('tutReopenBtn').style.display = 'block';
+  }
+}
+
+/* ===== Cat image black-bg removal ===== */
+function removeCatImgBg(img) {
+  if (img.dataset.processed) return;
+  img.dataset.processed = '1';
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width  = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const px = d.data;
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 40 && px[i+1] < 40 && px[i+2] < 40) px[i+3] = 0;
+    }
+    ctx.putImageData(d, 0, 0);
+    img.src = canvas.toDataURL('image/png');
+  } catch(e) {
+    // fallback: use mix-blend-mode if canvas blocked
+    img.style.mixBlendMode = 'screen';
+    img.parentElement.style.background = '#000';
+    img.parentElement.style.borderRadius = '50%';
   }
 }
 
@@ -940,6 +954,10 @@ function init() {
 /* ===== Baking ===== */
 function startBaking() {
   if (S.isBaking) return;
+  if (S.pomoRunning) {
+    showToast('🐭 집중 세션 중이에요! 쥐들한테 맡겨요~', 'warn');
+    return;
+  }
   S.isBaking = true; S.bakingPct = 0;
   const bread = BREADS[S.selectedBread];
   const step  = 50, inc = (step / bread.time) * 100;
@@ -959,7 +977,7 @@ function startBaking() {
 }
 
 function completeBaking(bread) {
-  pushInv({type:bread.name, emoji:bread.emoji, price:bread.price});
+  const added = pushInv({type:bread.name, emoji:bread.emoji, price:bread.price});
   S.isBaking = false;
   const w = document.getElementById('mokaWrap');
   w.classList.remove('baking'); w.classList.add('happy');
@@ -967,13 +985,24 @@ function completeBaking(bread) {
   document.getElementById('bakeBtn').disabled = false;
   document.getElementById('progressFill').style.width = '0%';
   document.getElementById('progressLabel').textContent = '준비 완료 ✨';
-  setSpeech(`${bread.emoji} 완성! 냥~`);
-  addLog(`✅ ${bread.name} 완성! 인벤토리 추가`);
-  showToast(`${bread.emoji} ${bread.name} 완성!`);
+  if (added) {
+    setSpeech(`${bread.emoji} 완성! 냥~`);
+    addLog(`✅ ${bread.name} 완성! 인벤토리 추가`);
+    showToast(`${bread.emoji} ${bread.name} 완성!`);
+  } else {
+    setSpeech('인벤토리가 가득이에요 냥... 진열하고 다시 구워요!');
+    addLog(`⚠️ ${bread.name} 완성됐지만 인벤토리 가득으로 버려짐`);
+    showToast('🚫 인벤토리 가득! 진열대에 먼저 올려요', 'warn');
+  }
   renderInventory();
 }
 
-function pushInv(item) { S.inventory.push(item); }
+// returns false if inventory is full
+function pushInv(item) {
+  if (S.inventory.length >= MAX_INV) return false;
+  S.inventory.push(item);
+  return true;
+}
 
 /* ===== Shelf ===== */
 function renderShelf() {
@@ -998,12 +1027,9 @@ function renderShelf() {
 }
 
 function placeOnShelf(slotIdx) {
-  if (S.selectedInvIdx === null) {
-    showToast('인벤토리에서 빵을 먼저 선택하세요!', 'warn'); return;
-  }
   if (S.shelf[slotIdx]) return;
-  moveInvToShelf(S.selectedInvIdx, slotIdx);
-  S.selectedInvIdx = null;
+  if (!S.inventory.length) { showToast('인벤토리가 비어있어요!', 'warn'); return; }
+  moveInvToShelf(0, slotIdx);
   setSpeech('진열 완료! 손님 기다리는 중 냥~');
   renderShelf(); renderInventory();
 }
@@ -1016,22 +1042,32 @@ function moveInvToShelf(invIdx, slotIdx) {
 
 /* ===== Inventory ===== */
 function renderInventory() {
-  const c = document.getElementById('invItems');
-  const l = document.getElementById('invCountLabel');
+  const c    = document.getElementById('invItems');
+  const l    = document.getElementById('invCountLabel');
+  const full = S.inventory.length >= MAX_INV;
   if (!S.inventory.length) {
     c.innerHTML = '<span class="inv-empty">빵을 구우면 여기에 추가됩니다.</span>';
     l.textContent = ''; return;
   }
-  l.textContent = `(${S.inventory.length}개) — 클릭 선택 → 진열대 배치`;
+  l.textContent = full
+    ? `🚫 인벤토리 가득! (${MAX_INV}/${MAX_INV}) — 진열대에 올려주세요`
+    : `(${S.inventory.length}/${MAX_INV}) — 클릭하면 진열대에 자동 배치`;
+  l.style.color = full ? '#c04030' : '';
   c.innerHTML = '';
   S.inventory.forEach((item, i) => {
     const div = document.createElement('div');
-    div.className = 'inv-item' + (S.selectedInvIdx===i ? ' selected' : '');
+    div.className = 'inv-item';
     div.innerHTML = `<span class="i-emoji">${item.emoji}</span><span>${item.type}</span>`;
     div.addEventListener('click', () => {
-      S.selectedInvIdx = S.selectedInvIdx===i ? null : i;
-      renderInventory();
-      if (S.selectedInvIdx !== null) setSpeech('진열대 빈 칸을 클릭해서 배치!');
+      const slot = S.shelf.findIndex(s => !s);
+      if (slot === -1) {
+        showToast('진열대가 가득 찼어요!', 'warn');
+        setSpeech('진열대가 가득이에요 냥...');
+        return;
+      }
+      moveInvToShelf(i, slot);
+      renderShelf(); renderInventory();
+      setSpeech('진열 완료! 냥~');
     });
     c.appendChild(div);
   });
@@ -1039,13 +1075,21 @@ function renderInventory() {
 
 /* ===== Customer ===== */
 function customerDelay() {
-  return S.rushOn
-    ? 1000 + Math.random() * 2000
-    : 3000 + Math.random() * 4000;
+  const rats = S.hiredRats.length;
+  const red  = Math.min(rats * 300, 2000); // 0.3s per rat, max -2s
+  const minD = Math.max(1000, 3000 - red);
+  const maxD = Math.max(minD + 500, 7000 - red);
+  const base = minD + Math.random() * (maxD - minD);
+  return S.rushOn ? Math.round(base / 3) : base;
 }
 
 function scheduleCustomer() {
   S.customerTimer = setTimeout(spawnCustomer, customerDelay());
+}
+
+function rescheduleCustomer() {
+  clearTimeout(S.customerTimer);
+  scheduleCustomer();
 }
 
 function spawnCustomer() {
@@ -1084,13 +1128,15 @@ function spawnCustomer() {
 
 /* ===== Pomodoro ===== */
 function pomoToggle() {
-  S.pomoRunning ? pomoPause() : pomoStart();
+  if (!S.pomoRunning) pomoStart();
+  // running 중 재클릭 무시
 }
 
 function pomoStart() {
   if (S.pomoRunning) return;
+  clearInterval(S.pomoTick); // 이중 interval 방지
   S.pomoRunning = true;
-  document.getElementById('pomoBtn').textContent = '⏸ 일시정지';
+  document.getElementById('pomoBtn').textContent = '⏱ 진행 중...';
   document.getElementById('pomoStatus').textContent = '집중 중...';
   setSpeech('뽀모도로 시작! 집중해요 냥!');
   addLog(`⏱ 뽀모도로 ${S.pomoMins}분 시작!`);
@@ -1101,7 +1147,7 @@ function pomoPause() {
   clearInterval(S.pomoTick);
   S.pomoRunning = false;
   document.getElementById('pomoBtn').textContent = '▶ 시작';
-  document.getElementById('pomoStatus').textContent = '일시정지';
+  document.getElementById('pomoStatus').textContent = '리셋됨';
   setSpeech('잠깐 쉬는 중... 냥');
 }
 
@@ -1121,7 +1167,7 @@ function pomoPip() {
 function pomoComplete() {
   clearInterval(S.pomoTick);
   S.pomoRunning = false;
-  document.getElementById('pomoBtn').textContent = '▶ 시작';
+  document.getElementById('pomoBtn').textContent = '▶ 다시 시작';
   document.getElementById('pomoStatus').textContent = '완료! 🎉';
 
   // Fuel gain: 25→+3, 15→+2, 5→+1
@@ -1193,8 +1239,10 @@ function startRushTime() {
   if (!S.rushOn) {
     S.rushOn = true;
     document.getElementById('rushBanner').classList.add('on');
-    addLog('🎉 러쉬타임 발동! 5분간 손님 2배 방문!');
+    document.body.classList.add('rush-active');
+    addLog('🎉 러쉬타임 발동! 5분간 손님 3배 방문!');
     showToast('🎉 러쉬타임! 손님이 몰려와요!', 'rush');
+    rescheduleCustomer(); // 즉시 빠른 간격으로 재스케줄
     S.rushTick = setInterval(() => {
       S.rushLeft--;
       const m = String(Math.floor(S.rushLeft/60)).padStart(2,'0');
@@ -1203,8 +1251,7 @@ function startRushTime() {
       if (S.rushLeft <= 0) endRushTime();
     }, 1000);
   } else {
-    // Already active — reset timer
-    S.rushLeft = 5 * 60;
+    S.rushLeft = 5 * 60; // 이미 활성화면 시간만 리셋
   }
 }
 
@@ -1212,6 +1259,8 @@ function endRushTime() {
   clearInterval(S.rushTick);
   S.rushOn = false;
   document.getElementById('rushBanner').classList.remove('on');
+  document.body.classList.remove('rush-active');
+  rescheduleCustomer(); // 정상 간격으로 복귀
   addLog('⌛ 러쉬타임 종료');
   showToast('러쉬타임 종료!');
 }
@@ -1243,7 +1292,10 @@ function renderShop() {
 
   // Rat hire cards
   Object.entries(RAT_DEFS).forEach(([type, def]) => {
-    const cnt  = S.ratCount[type];
+    const cnt    = S.ratCount[type];
+    const maxCnt = RAT_MAX[type];
+    const check  = canHireRat(type);
+    const maxed  = cnt >= maxCnt;
     const card = document.createElement('div');
     card.className = 'shop-card';
     card.innerHTML = `
@@ -1251,12 +1303,13 @@ function renderShop() {
         <span class="sc-icon">🐭</span>
         <div>
           <div class="sc-name">${def.name} ${def.badge}</div>
-          <div class="sc-sub">${cnt}마리 고용 중</div>
+          <div class="sc-sub">${cnt}/${maxCnt}마리 고용 중</div>
         </div>
       </div>
       <div class="sc-desc">${def.desc}</div>
-      <button class="sc-btn" onclick="hireRat('${type}')">
-        💰 ${def.cost.toLocaleString()}G — 고용
+      <button class="sc-btn ${!check.ok ? 'maxed' : ''}" onclick="hireRat('${type}')"
+        ${!check.ok ? 'disabled' : ''}>
+        ${maxed ? `✅ 최대 (${cnt}/${maxCnt})` : `💰 ${def.cost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`}
       </button>`;
     grid.appendChild(card);
   });
@@ -1305,9 +1358,19 @@ function buyShelf() {
   renderShelf(); renderShop();
 }
 
+function canHireRat(type) {
+  if (S.gold < RAT_DEFS[type].cost) return { ok: false, reason: '골드가 부족해요!' };
+  if (S.ratCount[type] >= RAT_MAX[type]) return { ok: false, reason: `${RAT_DEFS[type].name}은 최대 ${RAT_MAX[type]}마리까지만 고용할 수 있어요!` };
+  if (S.hiredRats.length >= RAT_TOTAL_MAX) return { ok: false, reason: '전체 쥐는 최대 10마리까지 고용할 수 있어요!' };
+  if (S.hiredRats.length >= S.shelf.length) return { ok: false, reason: '진열대를 먼저 늘려야 해요! 🐭' };
+  return { ok: true };
+}
+
 function hireRat(type) {
+  const check = canHireRat(type);
+  if (!check.ok) { showToast(check.reason, 'warn'); return; }
+
   const def = RAT_DEFS[type];
-  if (S.gold < def.cost) { showToast('골드가 부족해요!','warn'); return; }
   S.gold -= def.cost;
   document.getElementById('goldAmt').textContent = S.gold.toLocaleString();
 
@@ -1317,11 +1380,12 @@ function hireRat(type) {
 
   if (S.ratCount[type] === 1) startRatTimer(type);
 
-  addLog(`🐭 ${def.name} ${def.badge} 고용! (${S.ratCount[type]}마리)`);
+  addLog(`🐭 ${def.name} ${def.badge} 고용! (${S.ratCount[type]}/${RAT_MAX[type]}마리)`);
   setSpeech('냥! 새 쥐 직원이 왔어요~');
   showToast(`🐭 ${def.name} 고용! (${S.ratCount[type]}마리)`);
 
   spawnWalker(id, type);
+  rescheduleCustomer();
   renderShop(); renderHired();
 }
 
@@ -1349,6 +1413,7 @@ function fireRat(ratId, event) {
 
   addLog(`🔥 ${def.name} 해고. 환불: +${refund.toLocaleString()}G`);
   showToast(`🔥 해고. +${refund.toLocaleString()}G 환불`);
+  rescheduleCustomer();
   renderShop(); renderHired();
 }
 
@@ -1363,19 +1428,24 @@ function ratWork(type) {
   if (!cnt) return;
 
   if (type === 'partTime') {
-    for (let i=0;i<cnt;i++)
-      pushInv({type:BREADS.morning.name, emoji:BREADS.morning.emoji, price:BREADS.morning.price});
-    addLog(`🐭×${cnt} 모닝빵 ${cnt}개 자동 생산!`);
-    showToast(`🐭 모닝빵 ${cnt}개 자동 생산!`);
+    let n = 0;
+    for (let i=0;i<cnt;i++) {
+      if (!pushInv({type:BREADS.morning.name, emoji:BREADS.morning.emoji, price:BREADS.morning.price})) break;
+      n++;
+    }
+    if (n > 0) { addLog(`🐭×${cnt} 모닝빵 ${n}개 자동 생산!`); showToast(`🐭 모닝빵 ${n}개 자동 생산!`); }
+    else showToast('🚫 인벤토리 가득! 쥐들이 대기 중...', 'warn');
     renderInventory();
 
   } else if (type === 'baker') {
+    let n = 0;
     for (let i=0;i<cnt;i++) {
       const b = BREADS[BKEYS[Math.floor(Math.random()*BKEYS.length)]];
-      pushInv({type:b.name, emoji:b.emoji, price:b.price});
+      if (!pushInv({type:b.name, emoji:b.emoji, price:b.price})) break;
+      n++;
     }
-    addLog(`🐭×${cnt} 제빵사 쥐가 빵 ${cnt}개 생산!`);
-    showToast(`🐭 랜덤 빵 ${cnt}개 자동 생산!`);
+    if (n > 0) { addLog(`🐭×${cnt} 제빵사 쥐가 빵 ${n}개 생산!`); showToast(`🐭 랜덤 빵 ${n}개 자동 생산!`); }
+    else showToast('🚫 인벤토리 가득! 쥐들이 대기 중...', 'warn');
     renderInventory();
 
   } else if (type === 'manager') {
