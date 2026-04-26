@@ -391,7 +391,8 @@ body {
 }
 .sc-btn:hover:not(:disabled) { background: var(--btn-hover); }
 .sc-btn:disabled { background: #b09070; cursor: not-allowed; opacity: .7; }
-.sc-btn.maxed { background: #6a9e50; cursor: default; opacity: 1; }
+.sc-btn.maxed   { background: #6a9e50; cursor: default; opacity: 1; }
+.sc-btn.cant-hire { background: #9a8070; cursor: not-allowed; opacity: .65; }
 .sc-btn.green  { background: #60a040; }
 .sc-btn.green:hover:not(:disabled) { background: #408030; }
 
@@ -1080,7 +1081,7 @@ function customerDelay() {
   const minD = Math.max(1000, 3000 - red);
   const maxD = Math.max(minD + 500, 7000 - red);
   const base = minD + Math.random() * (maxD - minD);
-  return S.rushOn ? Math.round(base / 3) : base;
+  return S.rushOn ? Math.round(base / 5) : base;
 }
 
 function scheduleCustomer() {
@@ -1224,12 +1225,17 @@ function renderFuel() {
   document.getElementById('zzzWrap').classList.toggle('on', S.fuel === 0);
 }
 
+function ratInterval(type) {
+  let iv = S.fuel > 0 ? RAT_DEFS[type].interval : RAT_DEFS[type].interval * 2;
+  if (S.rushOn) iv = Math.round(iv / (type === 'manager' ? 3 : 2));
+  return iv;
+}
+
 function updateRatSpeed() {
   Object.keys(RAT_DEFS).forEach(type => {
     if (!S.ratTimers[type]) return;
     clearInterval(S.ratTimers[type]);
-    const interval = S.fuel > 0 ? RAT_DEFS[type].interval : RAT_DEFS[type].interval * 2;
-    S.ratTimers[type] = setInterval(() => ratWork(type), interval);
+    S.ratTimers[type] = setInterval(() => ratWork(type), ratInterval(type));
   });
 }
 
@@ -1240,9 +1246,10 @@ function startRushTime() {
     S.rushOn = true;
     document.getElementById('rushBanner').classList.add('on');
     document.body.classList.add('rush-active');
-    addLog('🎉 러쉬타임 발동! 5분간 손님 3배 방문!');
+    addLog('🎉 러쉬타임 발동! 5분간 손님 5배 방문 + 쥐 2~3배 가속!');
     showToast('🎉 러쉬타임! 손님이 몰려와요!', 'rush');
-    rescheduleCustomer(); // 즉시 빠른 간격으로 재스케줄
+    rescheduleCustomer();
+    updateRatSpeed(); // 쥐 가속 적용 (all×2, manager×3)
     S.rushTick = setInterval(() => {
       S.rushLeft--;
       const m = String(Math.floor(S.rushLeft/60)).padStart(2,'0');
@@ -1260,7 +1267,8 @@ function endRushTime() {
   S.rushOn = false;
   document.getElementById('rushBanner').classList.remove('on');
   document.body.classList.remove('rush-active');
-  rescheduleCustomer(); // 정상 간격으로 복귀
+  rescheduleCustomer();
+  updateRatSpeed(); // 쥐 속도 원래대로 복귀
   addLog('⌛ 러쉬타임 종료');
   showToast('러쉬타임 종료!');
 }
@@ -1292,12 +1300,25 @@ function renderShop() {
 
   // Rat hire cards
   Object.entries(RAT_DEFS).forEach(([type, def]) => {
-    const cnt    = S.ratCount[type];
-    const maxCnt = RAT_MAX[type];
-    const check  = canHireRat(type);
-    const maxed  = cnt >= maxCnt;
+    const cnt      = S.ratCount[type];
+    const maxCnt   = RAT_MAX[type];
+    const typMaxed = cnt >= maxCnt;           // 이 종류 한도 도달
+    const check    = canHireRat(type);
     const card = document.createElement('div');
     card.className = 'shop-card';
+
+    let btnClass = 'sc-btn';
+    let btnLabel;
+    if (typMaxed) {
+      btnClass += ' maxed';                   // 초록: 종류 한도
+      btnLabel  = `✅ 최대 (${cnt}/${maxCnt})`;
+    } else if (!check.ok) {
+      btnClass += ' cant-hire';               // 회색: 골드 부족 / 진열대 부족 등
+      btnLabel  = `🔒 ${def.cost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`;
+    } else {
+      btnLabel  = `💰 ${def.cost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`;
+    }
+
     card.innerHTML = `
       <div class="sc-head">
         <span class="sc-icon">🐭</span>
@@ -1307,10 +1328,8 @@ function renderShop() {
         </div>
       </div>
       <div class="sc-desc">${def.desc}</div>
-      <button class="sc-btn ${!check.ok ? 'maxed' : ''}" onclick="hireRat('${type}')"
-        ${!check.ok ? 'disabled' : ''}>
-        ${maxed ? `✅ 최대 (${cnt}/${maxCnt})` : `💰 ${def.cost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`}
-      </button>`;
+      <button class="${btnClass}" onclick="hireRat('${type}')"
+        ${!check.ok ? 'disabled' : ''}>${btnLabel}</button>`;
     grid.appendChild(card);
   });
 }
@@ -1419,8 +1438,7 @@ function fireRat(ratId, event) {
 
 /* ===== Rat Timers ===== */
 function startRatTimer(type) {
-  const iv = S.fuel > 0 ? RAT_DEFS[type].interval : RAT_DEFS[type].interval * 2;
-  S.ratTimers[type] = setInterval(() => ratWork(type), iv);
+  S.ratTimers[type] = setInterval(() => ratWork(type), ratInterval(type));
 }
 
 function ratWork(type) {
