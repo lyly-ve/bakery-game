@@ -683,9 +683,9 @@ body {
       <div class="panel-title">⏱ 뽀모도로 집중 연료</div>
 
       <div class="pomo-sess-row" id="pomoSessRow">
-        <button class="pomo-sess-btn active" data-mins="25">🍅 25분</button>
-        <button class="pomo-sess-btn" data-mins="15">⏰ 15분</button>
-        <button class="pomo-sess-btn" data-mins="5">☕ 5분</button>
+        <button class="pomo-sess-btn active" data-mins="50">🍅 50분</button>
+        <button class="pomo-sess-btn" data-mins="25">⏰ 25분</button>
+        <button class="pomo-sess-btn" data-mins="15">☕ 15분</button>
       </div>
 
       <div class="pomo-display">
@@ -789,8 +789,8 @@ const S = {
   ratTimers: {partTime:null, baker:null, manager:null},
   nextRatId: 0,
 
-  pomoMins: 25,
-  pomoLeft: 25*60,
+  pomoMins: 50,
+  pomoLeft: 50*60,
   pomoRunning: false,
   pomoTick: null,
 
@@ -822,12 +822,12 @@ const TUT_SLIDES = [
   {
     illus: '🍅',
     title: '집중 타이머를 돌리면 연료가 채워지고 쥐들이 빨라져요!',
-    body:  '뽀모도로 타이머(25분·15분·5분)를 완료하면<br>집중 연료가 충전돼요. 공부하면서 게임도 키워보세요!',
+    body:  '집중 타이머(50분·25분·15분)를 완료하면<br>집중 연료가 충전돼요. 공부하면서 게임도 키워보세요!',
   },
   {
     illus: '🎉',
     title: '타이머 끝나면 손님 러쉬타임!',
-    body:  '세션이 끝날 때마다 <b>5분간 러쉬타임</b>이 발동돼요.<br>손님 방문 간격이 3배 빨라져 빵이 불티나게 팔려요!',
+    body:  '세션이 끝날 때마다 <b>러쉬타임</b>이 발동돼요.<br>15분→3분, 25분→5분, 50분→10분 비례 지속!',
   },
   {
     illus: '🐭',
@@ -1171,8 +1171,8 @@ function pomoComplete() {
   document.getElementById('pomoBtn').textContent = '▶ 다시 시작';
   document.getElementById('pomoStatus').textContent = '완료! 🎉';
 
-  // Fuel gain: 25→+5(대이득), 15→+3(이득), 5→+1(본전)
-  const gain = S.pomoMins === 25 ? 5 : S.pomoMins === 15 ? 3 : 1;
+  // Fuel gain: 50→+10(대이득), 25→+5(이득), 15→+3(본전)
+  const gain = S.pomoMins === 50 ? 10 : S.pomoMins === 25 ? 5 : 3;
   S.fuel = Math.min(MAX_FUEL, S.fuel + gain);
   renderFuel();
   if (S.fuel > 0) updateRatSpeed(); // wake up rats if they were sleeping
@@ -1240,16 +1240,22 @@ function updateRatSpeed() {
 }
 
 /* ===== Rush Time ===== */
+function rushDuration() {
+  // 세션 시간에 비례: 15분→3분, 25분→5분, 50분→10분
+  return (S.pomoMins / 5) * 60;
+}
+
 function startRushTime() {
-  S.rushLeft = 5 * 60;
+  S.rushLeft = rushDuration();
   if (!S.rushOn) {
     S.rushOn = true;
     document.getElementById('rushBanner').classList.add('on');
     document.body.classList.add('rush-active');
-    addLog('🎉 러쉬타임 발동! 5분간 손님 5배 방문 + 쥐 2~3배 가속!');
+    const mins = Math.round(S.rushLeft / 60);
+    addLog(`🎉 러쉬타임 발동! ${mins}분간 손님 5배 방문 + 쥐 2~3배 가속!`);
     showToast('🎉 러쉬타임! 손님이 몰려와요!', 'rush');
     rescheduleCustomer();
-    updateRatSpeed(); // 쥐 가속 적용 (all×2, manager×3)
+    updateRatSpeed();
     S.rushTick = setInterval(() => {
       S.rushLeft--;
       const m = String(Math.floor(S.rushLeft/60)).padStart(2,'0');
@@ -1258,7 +1264,7 @@ function startRushTime() {
       if (S.rushLeft <= 0) endRushTime();
     }, 1000);
   } else {
-    S.rushLeft = 5 * 60; // 이미 활성화면 시간만 리셋
+    S.rushLeft = rushDuration(); // 이미 활성화면 시간만 리셋
   }
 }
 
