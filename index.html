@@ -416,9 +416,123 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #f0dfc0; border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Tutorial Modal ── */
+.tut-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(92,61,46,.55);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+  animation: tut-fade-in .3s ease;
+}
+.tut-overlay.hidden { display: none; }
+@keyframes tut-fade-in { from{opacity:0} to{opacity:1} }
+
+.tut-card {
+  background: #fdf6ec;
+  border: 3px solid var(--border);
+  border-radius: 22px;
+  padding: 36px 38px 28px;
+  max-width: 420px; width: 90%;
+  box-shadow: 0 12px 40px rgba(92,61,46,.25);
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0; position: relative;
+  overflow: hidden;
+}
+
+/* decorative top stripe */
+.tut-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 6px;
+  background: linear-gradient(90deg, #c8a87e, #e8b870, #c8a87e);
+}
+
+.tut-slide { width: 100%; text-align: center; }
+
+.tut-illus {
+  font-size: 4rem; line-height: 1;
+  margin-bottom: 16px; display: block;
+  animation: tut-bounce .5s ease;
+}
+@keyframes tut-bounce {
+  0%  { transform: scale(.6) translateY(10px); opacity: 0; }
+  70% { transform: scale(1.08) translateY(-4px); opacity: 1; }
+  100%{ transform: scale(1) translateY(0); }
+}
+
+.tut-title {
+  font-size: 1.15rem; font-weight: bold;
+  color: var(--accent); margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.tut-body {
+  font-size: 0.88rem; color: #7a5a3a;
+  line-height: 1.65; min-height: 52px;
+}
+
+/* progress dots */
+.tut-dots {
+  display: flex; gap: 7px; justify-content: center;
+  margin-top: 22px; margin-bottom: 20px;
+}
+.tut-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--border); transition: background .25s, transform .25s;
+}
+.tut-dot.active {
+  background: var(--accent); transform: scale(1.3);
+}
+
+/* buttons */
+.tut-btn-row { display: flex; gap: 8px; width: 100%; }
+
+.tut-next-btn {
+  flex: 1; background: var(--btn); color: white;
+  border: none; border-radius: 11px; padding: 11px 16px;
+  font-size: 0.95rem; font-weight: bold; cursor: pointer;
+  transition: background .15s, transform .1s; letter-spacing: .5px;
+}
+.tut-next-btn:hover { background: var(--btn-hover); transform: translateY(-1px); }
+.tut-next-btn.start { background: #c9962b; }
+.tut-next-btn.start:hover { background: #a07820; }
+
+.tut-skip-link {
+  background: none; border: none; color: #b09070;
+  font-size: 0.78rem; cursor: pointer; padding: 4px 0;
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color .15s; align-self: center;
+}
+.tut-skip-link:hover { color: var(--accent); }
+
+/* returning visitor button (top-right of header) */
+.tut-reopen-btn {
+  background: rgba(255,255,255,.18); color: #fff8f0;
+  border: 1.5px solid rgba(255,255,255,.35);
+  border-radius: 9px; padding: 4px 11px;
+  font-size: 0.75rem; cursor: pointer;
+  transition: background .15s;
+}
+.tut-reopen-btn:hover { background: rgba(255,255,255,.3); }
 </style>
 </head>
 <body>
+
+<!-- Tutorial Modal -->
+<div class="tut-overlay hidden" id="tutOverlay">
+  <div class="tut-card">
+    <div class="tut-slide" id="tutSlide">
+      <span class="tut-illus" id="tutIllus">🐱</span>
+      <div class="tut-title" id="tutTitle"></div>
+      <div class="tut-body"  id="tutBody"></div>
+    </div>
+    <div class="tut-dots" id="tutDots"></div>
+    <div class="tut-btn-row">
+      <button class="tut-skip-link" id="tutSkipBtn" onclick="closeTutorial()">건너뛰기</button>
+      <button class="tut-next-btn"  id="tutNextBtn" onclick="tutNext()">다음 →</button>
+    </div>
+  </div>
+</div>
 
 <!-- Rush Time Banner -->
 <div id="rushBanner" class="rush-banner">
@@ -432,7 +546,11 @@ body {
     <h1>🐱 모카의 베이커리</h1>
     <span class="name-badge">모카 · Siamese</span>
   </div>
-  <div class="gold-display" id="goldDisplay">💰 <span id="goldAmt">0</span> G</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="tut-reopen-btn" id="tutReopenBtn"
+            onclick="openTutorial()" style="display:none">❓ 튜토리얼</button>
+    <div class="gold-display" id="goldDisplay">💰 <span id="goldAmt">0</span> G</div>
+  </div>
 </div>
 
 <!-- Game Grid -->
@@ -682,11 +800,115 @@ const S = {
   rushTick: null,
 };
 
+/* ===== Tutorial ===== */
+const TUT_SLIDES = [
+  {
+    illus: '🐱',
+    title: '모카의 베이커리에 오신 걸 환영해요!',
+    body:  '샴고양이 모카와 함께 귀여운 베이커리를 운영해보세요.<br>빵을 굽고, 진열하고, 손님에게 팔아 골드를 모아요!',
+  },
+  {
+    illus: '🐭',
+    title: '쥐들을 고용해서 빵을 자동으로 만들 수 있어요!',
+    body:  '하단 상점에서 <b>아르바이트 쥐 🎓 · 제빵사 쥐 👨‍🍳 · 쥐 매니저 📋</b>를 고용하면<br>빵 생산과 진열을 자동화할 수 있어요.',
+  },
+  {
+    illus: '⛽',
+    title: '쥐들은 집중 연료가 있어야 열심히 일해요!',
+    body:  '연료 게이지가 가득 차면 쥐들이 정상 속도로 일하지만,<br>연료가 떨어지면 쥐들이 💤 졸기 시작해서 속도가 절반으로 줄어요.',
+  },
+  {
+    illus: '🍅',
+    title: '집중 타이머를 돌리면 연료가 채워지고 쥐들이 빨라져요!',
+    body:  '뽀모도로 타이머(25분·15분·5분)를 완료하면<br>집중 연료가 충전돼요. 공부하면서 게임도 키워보세요!',
+  },
+  {
+    illus: '🎉',
+    title: '타이머 끝나면 손님 러쉬타임!',
+    body:  '세션이 끝날 때마다 <b>5분간 러쉬타임</b>이 발동돼요.<br>손님 방문 간격이 절반으로 줄어 빵이 불티나게 팔려요!',
+  },
+  {
+    illus: '☕',
+    title: '그럼 오늘도 모카와 함께 힘찬 하루 되세요!',
+    body:  '빵을 굽고, 쥐를 고용하고, 집중하면서<br>모카의 베이커리를 최고로 만들어봐요!',
+  },
+];
+
+const TUT_KEY = 'mocha_bakery_visited';
+let tutIdx = 0;
+
+function openTutorial() {
+  tutIdx = 0;
+  renderTutSlide();
+  document.getElementById('tutOverlay').classList.remove('hidden');
+}
+
+function closeTutorial() {
+  document.getElementById('tutOverlay').classList.add('hidden');
+  localStorage.setItem(TUT_KEY, '1');
+  document.getElementById('tutReopenBtn').style.display = 'block';
+}
+
+function tutNext() {
+  if (tutIdx < TUT_SLIDES.length - 1) {
+    tutIdx++;
+    renderTutSlide();
+  } else {
+    closeTutorial();
+  }
+}
+
+function renderTutSlide() {
+  const slide = TUT_SLIDES[tutIdx];
+  const isLast = tutIdx === TUT_SLIDES.length - 1;
+
+  // Animate illus swap
+  const illusEl = document.getElementById('tutIllus');
+  illusEl.style.animation = 'none';
+  void illusEl.offsetWidth;
+  illusEl.style.animation = '';
+  illusEl.textContent = slide.illus;
+
+  document.getElementById('tutTitle').textContent = slide.title;
+  document.getElementById('tutBody').innerHTML   = slide.body;
+
+  // Dots
+  const dots = document.getElementById('tutDots');
+  dots.innerHTML = '';
+  TUT_SLIDES.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'tut-dot' + (i === tutIdx ? ' active' : '');
+    dots.appendChild(d);
+  });
+
+  // Button
+  const btn = document.getElementById('tutNextBtn');
+  if (isLast) {
+    btn.textContent = '🎮 게임 시작!';
+    btn.className   = 'tut-next-btn start';
+    document.getElementById('tutSkipBtn').style.display = 'none';
+  } else {
+    btn.textContent = '다음 →';
+    btn.className   = 'tut-next-btn';
+    document.getElementById('tutSkipBtn').style.display = '';
+  }
+}
+
+function checkTutorial() {
+  const visited = localStorage.getItem(TUT_KEY);
+  if (!visited) {
+    openTutorial();
+  } else {
+    document.getElementById('tutReopenBtn').style.display = 'block';
+  }
+}
+
 /* ===== Init ===== */
 function init() {
   renderShelf(); renderInventory(); renderShop(); renderHired(); renderFuel();
   updatePomoDisplay();
   scheduleCustomer(); rotateCatMsg(); startFuelDrain();
+  checkTutorial();
 
   document.getElementById('breadSelector').addEventListener('click', e => {
     const opt = e.target.closest('.bread-option');
