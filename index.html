@@ -164,9 +164,14 @@ body {
   display: flex; flex-direction: column;
   align-items: center; gap: 3px;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,.12));
+  animation: breathe 3s ease-in-out infinite;
 }
 .moka-wrap.baking { animation: bake .45s ease-in-out infinite alternate; }
 .moka-wrap.happy  { animation: happy .4s ease-in-out 3; }
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-3px) scale(1.015); }
+}
 @keyframes bake {
   from { transform: rotate(-6deg) scale(1); }
   to   { transform: rotate(6deg) scale(1.07); }
@@ -179,8 +184,9 @@ body {
   100%{ transform: translateY(0); }
 }
 .moka-img {
-  width: 130px; height: 130px;
+  width: 145px; height: 145px;
   object-fit: contain;
+  mix-blend-mode: screen;
 }
 .moka-label {
   font-size: 0.72rem; font-weight: bold; color: var(--accent);
@@ -640,7 +646,7 @@ body {
     <div class="panel cat-area" id="catArea">
       <!-- Siamese pixel cat 모카 -->
       <div class="moka-wrap" id="mokaWrap">
-        <img class="moka-img" id="mokaImg" src="Mocka.png" alt="모카"
+        <img class="moka-img" id="mokaImg" src="./Mocka.png" alt="모카"
              onload="removeCatImgBg(this)">
         <div class="moka-label">🐱 모카</div>
       </div>
@@ -900,7 +906,7 @@ function removeCatImgBg(img) {
     const canvas = document.createElement('canvas');
     canvas.width  = img.naturalWidth;
     canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(img, 0, 0);
     const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const px = d.data;
@@ -909,11 +915,13 @@ function removeCatImgBg(img) {
     }
     ctx.putImageData(d, 0, 0);
     img.src = canvas.toDataURL('image/png');
+    // transparent bg ready → disable screen blend so true colors show
+    img.style.mixBlendMode = 'normal';
   } catch(e) {
-    // fallback: use mix-blend-mode if canvas blocked
-    img.style.mixBlendMode = 'screen';
-    img.parentElement.style.background = '#000';
-    img.parentElement.style.borderRadius = '50%';
+    // canvas blocked (local file://) — keep screen blend; darken parent for contrast
+    img.parentElement.style.background = '#2a1400';
+    img.parentElement.style.borderRadius = '14px';
+    img.parentElement.style.padding = '4px';
   }
 }
 
