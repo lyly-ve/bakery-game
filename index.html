@@ -163,8 +163,11 @@ body {
 .moka-wrap {
   display: flex; flex-direction: column;
   align-items: center; gap: 3px;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,.12));
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,.3));
   animation: breathe 3s ease-in-out infinite;
+  background: #2c1810;
+  border-radius: 20px;
+  padding: 10px 8px 4px;
 }
 .moka-wrap.baking { animation: bake .45s ease-in-out infinite alternate; }
 .moka-wrap.happy  { animation: happy .4s ease-in-out 3; }
@@ -186,7 +189,6 @@ body {
 .moka-img {
   width: 145px; height: 145px;
   object-fit: contain;
-  mix-blend-mode: screen;
 }
 .moka-label {
   font-size: 0.72rem; font-weight: bold; color: var(--accent);
@@ -646,8 +648,7 @@ body {
     <div class="panel cat-area" id="catArea">
       <!-- Siamese pixel cat 모카 -->
       <div class="moka-wrap" id="mokaWrap">
-        <img class="moka-img" id="mokaImg" src="./Mocka.png" alt="모카"
-             onload="removeCatImgBg(this)">
+        <img class="moka-img" id="mokaImg" src="./Mocka.png" alt="모카">
         <div class="moka-label">🐱 모카</div>
       </div>
 
@@ -756,7 +757,7 @@ const MAX_FUEL    = 5;
 const MAX_INV     = 500;
 const SHELF_MAX   = 9;
 const SHELF_COST  = 1000;
-const FUEL_DRAIN  = 120; // seconds per pip
+const FUEL_DRAIN  = 300; // seconds per pip (5 min)
 const RAT_MAX     = { partTime:5, baker:3, manager:2 };
 const RAT_TOTAL_MAX = 10;
 
@@ -898,32 +899,6 @@ function checkTutorial() {
   }
 }
 
-/* ===== Cat image black-bg removal ===== */
-function removeCatImgBg(img) {
-  if (img.dataset.processed) return;
-  img.dataset.processed = '1';
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width  = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(img, 0, 0);
-    const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const px = d.data;
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 40 && px[i+1] < 40 && px[i+2] < 40) px[i+3] = 0;
-    }
-    ctx.putImageData(d, 0, 0);
-    img.src = canvas.toDataURL('image/png');
-    // transparent bg ready → disable screen blend so true colors show
-    img.style.mixBlendMode = 'normal';
-  } catch(e) {
-    // canvas blocked (local file://) — keep screen blend; darken parent for contrast
-    img.parentElement.style.background = '#2a1400';
-    img.parentElement.style.borderRadius = '14px';
-    img.parentElement.style.padding = '4px';
-  }
-}
 
 /* ===== Init ===== */
 function init() {
@@ -963,7 +938,13 @@ function init() {
 function startBaking() {
   if (S.isBaking) return;
   if (S.pomoRunning) {
-    showToast('🐭 집중 세션 중이에요! 쥐들한테 맡겨요~', 'warn');
+    const msgs = [
+      '🐱 모카: "지금은 일에 집중할 때야!!"',
+      '🐭 쥐: "사장님!! 집중하세요!!"',
+      '🐭 쥐: "저희한테 맡기고 공부하세요!!"',
+      '🐱 모카: "빵은 쥐들이 구울게요, 집중!"',
+    ];
+    showToast(msgs[Math.floor(Math.random() * msgs.length)], 'warn');
     return;
   }
   S.isBaking = true; S.bakingPct = 0;
@@ -1129,7 +1110,7 @@ function spawnCustomer() {
     addLog(`${face} ${bread.type} 구매! +${bread.price.toLocaleString()}G`);
     setSpeech(`감사합니다 냥~! 💰`);
     showToast(`${face} ${bread.type} 판매! +${bread.price.toLocaleString()}G`, 'gold');
-    renderShelf();
+    renderShelf(); renderShop();
     setTimeout(() => { npc.classList.remove('on'); scheduleCustomer(); }, 1200);
   }, 900);
 }
@@ -1178,8 +1159,8 @@ function pomoComplete() {
   document.getElementById('pomoBtn').textContent = '▶ 다시 시작';
   document.getElementById('pomoStatus').textContent = '완료! 🎉';
 
-  // Fuel gain: 25→+3, 15→+2, 5→+1
-  const gain = S.pomoMins === 25 ? 3 : S.pomoMins === 15 ? 2 : 1;
+  // Fuel gain: 25→+5(대이득), 15→+3(이득), 5→+1(본전)
+  const gain = S.pomoMins === 25 ? 5 : S.pomoMins === 15 ? 3 : 1;
   S.fuel = Math.min(MAX_FUEL, S.fuel + gain);
   renderFuel();
   if (S.fuel > 0) updateRatSpeed(); // wake up rats if they were sleeping
