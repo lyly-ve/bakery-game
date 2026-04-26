@@ -76,8 +76,6 @@ body {
   display: flex; align-items: center; gap: 5px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
-.gold-display.pop { animation: gpop .3s ease; }
-@keyframes gpop { 50%{transform:scale(1.18)} }
 
 /* ── Layout ── */
 .game {
@@ -168,6 +166,23 @@ body {
   background: #2c1810;
   border-radius: 20px;
   padding: 10px 8px 4px;
+  position: relative;
+}
+.gold-float {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%; transform: translateX(-50%);
+  color: #d4920a;
+  font-size: 0.82rem; font-weight: 800;
+  white-space: nowrap; pointer-events: none;
+  animation: goldFloat 1.6s ease-out forwards;
+  z-index: 50;
+  text-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+@keyframes goldFloat {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-48px); }
 }
 .moka-wrap.baking { animation: bake .45s ease-in-out infinite alternate; }
 .moka-wrap.happy  { animation: happy .4s ease-in-out 3; }
@@ -1103,7 +1118,7 @@ function spawnCustomer() {
     const bread = S.shelf[idx];
     S.shelf[idx] = null;
     S.gold += bread.price;
-    addGoldPop();
+    addGoldPop(bread.price);
     document.getElementById('goldAmt').textContent = S.gold.toLocaleString();
     const w = document.getElementById('mokaWrap');
     w.classList.add('happy'); setTimeout(() => w.classList.remove('happy'), 1200);
@@ -1488,9 +1503,13 @@ function addLog(msg) {
   while (box.children.length > 25) box.removeChild(box.lastChild);
 }
 
-function addGoldPop() {
-  const el = document.getElementById('goldDisplay');
-  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+function addGoldPop(amount) {
+  const wrap = document.getElementById('mokaWrap');
+  const el = document.createElement('div');
+  el.className = 'gold-float';
+  el.textContent = `+${amount.toLocaleString()}G 🪙`;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 1700);
 }
 
 function showToast(msg, type='') {
