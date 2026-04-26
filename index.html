@@ -161,11 +161,6 @@ body {
 .moka-wrap {
   display: flex; flex-direction: column;
   align-items: center; gap: 3px;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,.15));
-  animation: breathe 3s ease-in-out infinite;
-  background: #f5efe6;
-  border-radius: 20px;
-  padding: 10px 8px 4px;
   position: relative;
 }
 .gold-float {
@@ -184,8 +179,13 @@ body {
   75%  { opacity: 1; }
   100% { opacity: 0; transform: translateX(-50%) translateY(-48px); }
 }
-.moka-wrap.baking { animation: bake .45s ease-in-out infinite alternate; }
-.moka-wrap.happy  { animation: happy .4s ease-in-out 3; }
+.moka-img {
+  width: 145px; height: 145px;
+  object-fit: contain;
+  animation: breathe 3s ease-in-out infinite;
+}
+.moka-wrap.baking .moka-img { animation: bake .45s ease-in-out infinite alternate; }
+.moka-wrap.happy  .moka-img { animation: happy .4s ease-in-out 3; }
 @keyframes breathe {
   0%, 100% { transform: translateY(0) scale(1); }
   50%       { transform: translateY(-3px) scale(1.015); }
@@ -200,10 +200,6 @@ body {
   60% { transform: translateY(0); }
   80% { transform: translateY(-6px) scale(1.04); }
   100%{ transform: translateY(0); }
-}
-.moka-img {
-  width: 145px; height: 145px;
-  object-fit: contain;
 }
 .moka-label {
   font-size: 0.72rem; font-weight: bold; color: var(--accent);
