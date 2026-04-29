@@ -769,7 +769,7 @@ body {
     <button class="tut-reopen-btn" id="tutReopenBtn"
             onclick="openTutorial()" style="display:none">❓ 튜토리얼</button>
     <div class="bgm-ctrl">
-      <button class="bgm-btn" id="bgmBtn" onclick="bgmToggle()" title="음악 켜기/끄기">🎵</button>
+      <button class="bgm-btn muted" id="bgmBtn" onclick="bgmToggle()" title="음악 켜기/끄기">🔇</button>
       <input class="bgm-vol" id="bgmVol" type="range" min="0" max="1" step="0.05" value="0.35"
              oninput="bgmSetVol(this.value)" title="음량">
     </div>
@@ -1134,69 +1134,78 @@ function checkTutorial() {
 
 /* ===== BGM ===== */
 let bgmOn      = false;
-let bgmFocused = false; // 현재 집중 트랙 재생 중
-const BGM_FADE = 800;   // 크로스페이드 ms
+let bgmFocused = false;
+const BGM_FADE = 900;
 
-function bgmGetVol() { return +document.getElementById('bgmVol').value; }
+function bgmGetVol() { return parseFloat(document.getElementById('bgmVol').value); }
+
+function bgmSetBtn(on) {
+  const btn = document.getElementById('bgmBtn');
+  btn.textContent = on ? '🎵' : '🔇';
+  btn.classList.toggle('muted', !on);
+}
 
 function bgmToggle() {
-  const btn = document.getElementById('bgmBtn');
   if (bgmOn) {
-    bgmFadeOut(document.getElementById('bgmNormal'));
-    bgmFadeOut(document.getElementById('bgmFocus'));
     bgmOn = false;
-    btn.textContent = '🔇';
-    btn.classList.add('muted');
+    bgmSetBtn(false);
+    bgmFadeOutEl('bgmNormal');
+    bgmFadeOutEl('bgmFocus');
   } else {
     bgmOn = true;
-    btn.textContent = '🎵';
-    btn.classList.remove('muted');
-    bgmFocused ? bgmFadeIn(document.getElementById('bgmFocus'))
-               : bgmFadeIn(document.getElementById('bgmNormal'));
+    bgmSetBtn(true);
+    bgmFadeInEl(bgmFocused ? 'bgmFocus' : 'bgmNormal');
   }
 }
 
 function bgmSetVol(v) {
-  const active = bgmFocused ? document.getElementById('bgmFocus')
-                             : document.getElementById('bgmNormal');
-  if (bgmOn) active.volume = v;
+  const vol = parseFloat(v);
+  // 두 트랙 모두 볼륨 업데이트 (fade 중에도 비율 유지)
+  const normal = document.getElementById('bgmNormal');
+  const focus  = document.getElementById('bgmFocus');
+  if (!normal.paused) normal.volume = vol;
+  if (!focus.paused)  focus.volume  = vol;
 }
 
 function bgmSwitchTo(mode) {
-  // mode: 'normal' | 'focus'
   const toFocus = (mode === 'focus');
   if (toFocus === bgmFocused) return;
   bgmFocused = toFocus;
   if (!bgmOn) return;
-  const fadeIn  = document.getElementById(toFocus ? 'bgmFocus'  : 'bgmNormal');
-  const fadeOut = document.getElementById(toFocus ? 'bgmNormal' : 'bgmFocus');
-  bgmCrossfade(fadeOut, fadeIn);
+  const inId  = toFocus ? 'bgmFocus'  : 'bgmNormal';
+  const outId = toFocus ? 'bgmNormal' : 'bgmFocus';
+  bgmCrossfade(outId, inId);
 }
 
-function bgmCrossfade(outEl, inEl) {
-  const vol    = bgmGetVol();
-  const steps  = 20;
-  const dt     = BGM_FADE / steps;
-  inEl.volume  = 0;
+function bgmCrossfade(outId, inId) {
+  const outEl = document.getElementById(outId);
+  const inEl  = document.getElementById(inId);
+  const vol   = bgmGetVol();
+  const steps = 18, dt = BGM_FADE / steps;
+  const startOut = outEl.volume;
+  inEl.volume = 0;
   inEl.play().catch(() => {});
   let i = 0;
   const t = setInterval(() => {
     i++;
-    outEl.volume = Math.max(0, vol * (1 - i / steps));
-    inEl.volume  = Math.min(vol, vol * (i / steps));
+    const p = i / steps;
+    outEl.volume = Math.max(0, startOut * (1 - p));
+    inEl.volume  = Math.min(vol, vol * p);
     if (i >= steps) {
       clearInterval(t);
       outEl.pause();
+      outEl.currentTime = 0;
       outEl.volume = vol;
     }
   }, dt);
 }
 
-function bgmFadeIn(el) {
+function bgmFadeInEl(id) {
+  const el  = document.getElementById(id);
   const vol = bgmGetVol();
   el.volume = 0;
   el.play().catch(() => {});
-  const steps = 16, dt = BGM_FADE / steps;
+  const steps = 18, dt = BGM_FADE / steps;
   let i = 0;
   const t = setInterval(() => {
     i++;
@@ -1205,27 +1214,38 @@ function bgmFadeIn(el) {
   }, dt);
 }
 
-function bgmFadeOut(el) {
+function bgmFadeOutEl(id) {
+  const el    = document.getElementById(id);
+  if (el.paused) return;
   const start = el.volume;
-  const steps = 16, dt = BGM_FADE / steps;
+  const steps = 18, dt = BGM_FADE / steps;
   let i = 0;
   const t = setInterval(() => {
     i++;
     el.volume = Math.max(0, start * (1 - i / steps));
-    if (i >= steps) { clearInterval(t); el.pause(); el.volume = start; }
+    if (i >= steps) { clearInterval(t); el.pause(); el.volume = bgmGetVol(); }
   }, dt);
 }
 
 function bgmAutoStart() {
   const normal = document.getElementById('bgmNormal');
   normal.volume = bgmGetVol();
+
+  // 자동 재생 시도
   normal.play().then(() => {
     bgmOn = true;
+    bgmSetBtn(true);
   }).catch(() => {
-    document.addEventListener('click', function startOnce() {
-      normal.play().then(() => { bgmOn = true; }).catch(() => {});
-      document.removeEventListener('click', startOnce);
-    }, { once: true });
+    // 브라우저가 autoplay 차단 → 첫 인터랙션 시 시작
+    bgmSetBtn(false); // 🔇 로 표시해서 유저에게 알림
+    const startOnInteract = () => {
+      normal.volume = bgmGetVol();
+      normal.play().then(() => {
+        bgmOn = true;
+        bgmSetBtn(true);
+      }).catch(() => {});
+    };
+    document.addEventListener('pointerdown', startOnInteract, { once: true });
   });
 }
 
