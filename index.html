@@ -941,7 +941,8 @@ const RAT_DEFS = {
 };
 
 const CFACES = ['👩','👨','👧','👦','🧑','👴','👵','🧓','🧔'];
-const CLINES = ['빵 주세요!','냥냥 맛있겠다!','하나만요~','오늘의 빵!','냄새 좋아요!'];
+const CLINES  = ['빵 주세요!','냥냥 맛있겠다!','하나만요~','오늘의 빵!','냄새 좋아요!'];
+const CNOBRDS = ['🚶 앗, 다음에 다시 올게요~','🚶 이따 다시 와야겠다!','🚶 음.. 나중에 올게요!','🚶 다음엔 꼭 사야지~'];
 const IDLES  = ['냥~ 오늘도 화이팅!','모닝빵 갓 구웠어요!','어서오세요 냥!','맛있게 드세요~'];
 
 const MAX_FUEL    = 5;
@@ -1286,14 +1287,13 @@ function spawnCustomer() {
   const npc    = document.getElementById('customerNpc');
   const face   = CFACES[Math.floor(Math.random()*CFACES.length)];
   document.getElementById('customerFace').textContent = face;
+  const noMsg = CNOBRDS[Math.floor(Math.random()*CNOBRDS.length)];
   document.getElementById('customerBubble').textContent =
-    filled.length ? CLINES[Math.floor(Math.random()*CLINES.length)] : '빵이 없네요...';
+    filled.length ? CLINES[Math.floor(Math.random()*CLINES.length)] : noMsg;
   npc.classList.add('on');
 
   if (!filled.length) {
-    addLog(`${face} 손님이 빵 없어 돌아갔어요.`);
     setSpeech('앗... 빵이 없어요 🥺');
-    showToast(`${face} 빵이 없어요!`, 'warn');
     setTimeout(() => { npc.classList.remove('on'); scheduleCustomer(); }, 1800);
     return;
   }
