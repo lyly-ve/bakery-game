@@ -1674,16 +1674,17 @@ function renderShop() {
     const card = document.createElement('div');
     card.className = 'shop-card';
 
+    const nextCost = ratCost(type);
     let btnClass = 'sc-btn';
     let btnLabel;
     if (typMaxed) {
-      btnClass += ' maxed';                   // 초록: 종류 한도
+      btnClass += ' maxed';
       btnLabel  = `✅ 최대 (${cnt}/${maxCnt})`;
     } else if (!check.ok) {
-      btnClass += ' cant-hire';               // 회색: 골드 부족 / 진열대 부족 등
-      btnLabel  = `🔒 ${def.cost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`;
+      btnClass += ' cant-hire';
+      btnLabel  = `🔒 ${nextCost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`;
     } else {
-      btnLabel  = `💰 ${def.cost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`;
+      btnLabel  = `💰 ${nextCost.toLocaleString()}G — ${def.badgeName}쥐 (${cnt}/${maxCnt})`;
     }
 
     card.innerHTML = `
@@ -1719,7 +1720,7 @@ function renderHired() {
       <div class="fire-popup">
         <div class="fp-name">${def.name}</div>
         <button class="fire-btn" onclick="fireRat(${rat.id},event)">
-          🔥 해고 (+${Math.floor(def.cost*0.5).toLocaleString()}G 환불)
+          🔥 해고 (+${Math.floor(ratLastCost(rat.type)*0.5).toLocaleString()}G 환불)
         </button>
       </div>`;
     div.addEventListener('click', e => {
@@ -1744,8 +1745,17 @@ function buyShelf() {
   renderShelf(); renderShop();
 }
 
+// 누진 고용 비용: base * 2^(현재 마리수)
+function ratCost(type) {
+  return RAT_DEFS[type].cost * Math.pow(2, S.ratCount[type]);
+}
+// 마지막 고용 시 지불한 비용 (해고 환불 기준)
+function ratLastCost(type) {
+  return RAT_DEFS[type].cost * Math.pow(2, S.ratCount[type] - 1);
+}
+
 function canHireRat(type) {
-  if (S.gold < RAT_DEFS[type].cost) return { ok: false, reason: '골드가 부족해요!' };
+  if (S.gold < ratCost(type)) return { ok: false, reason: '골드가 부족해요!' };
   if (S.ratCount[type] >= RAT_MAX[type]) return { ok: false, reason: `${RAT_DEFS[type].name}은 최대 ${RAT_MAX[type]}마리까지만 고용할 수 있어요!` };
   if (S.hiredRats.length >= RAT_TOTAL_MAX) return { ok: false, reason: '전체 쥐는 최대 10마리까지 고용할 수 있어요!' };
   if (S.hiredRats.length >= S.shelf.length) return { ok: false, reason: '진열대를 먼저 늘려야 해요! 🐭' };
@@ -1756,8 +1766,9 @@ function hireRat(type) {
   const check = canHireRat(type);
   if (!check.ok) { showToast(check.reason, 'warn'); return; }
 
-  const def = RAT_DEFS[type];
-  S.gold -= def.cost;
+  const def  = RAT_DEFS[type];
+  const cost = ratCost(type);
+  S.gold -= cost;
   document.getElementById('goldAmt').textContent = S.gold.toLocaleString();
 
   const id = S.nextRatId++;
@@ -1766,7 +1777,7 @@ function hireRat(type) {
 
   if (S.ratCount[type] === 1) startRatTimer(type);
 
-  addLog(`🐭 ${def.name} ${def.badge} 고용! (${S.ratCount[type]}/${RAT_MAX[type]}마리)`);
+  addLog(`🐭 ${def.name} ${def.badge} 고용! -${cost.toLocaleString()}G (${S.ratCount[type]}/${RAT_MAX[type]}마리)`);
   setSpeech('냥! 새 쥐 직원이 왔어요~');
   showToast(`🐭 ${def.name} 고용! (${S.ratCount[type]}마리)`);
 
@@ -1782,7 +1793,7 @@ function fireRat(ratId, event) {
 
   const rat    = S.hiredRats[idx];
   const def    = RAT_DEFS[rat.type];
-  const refund = Math.floor(def.cost * 0.5);
+  const refund = Math.floor(ratLastCost(rat.type) * 0.5);
 
   S.hiredRats.splice(idx, 1);
   S.ratCount[rat.type]--;
