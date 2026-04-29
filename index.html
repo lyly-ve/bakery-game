@@ -708,6 +708,31 @@ body {
   transition: background .15s;
 }
 .tut-reopen-btn:hover { background: rgba(255,255,255,.3); }
+
+/* ── BGM controls ── */
+.bgm-ctrl {
+  display: flex; align-items: center; gap: 6px;
+}
+.bgm-btn {
+  background: rgba(255,255,255,.18); color: #fff8f0;
+  border: 1.5px solid rgba(255,255,255,.35);
+  border-radius: 9px; padding: 4px 9px;
+  font-size: 0.9rem; cursor: pointer; transition: background .15s;
+  line-height: 1;
+}
+.bgm-btn:hover  { background: rgba(255,255,255,.3); }
+.bgm-btn.muted  { opacity: .45; }
+.bgm-vol {
+  -webkit-appearance: none; appearance: none;
+  width: 68px; height: 4px; border-radius: 4px;
+  background: rgba(255,255,255,.35); cursor: pointer; outline: none;
+}
+.bgm-vol::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: #fff8f0; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
 </style>
 </head>
 <body>
@@ -743,9 +768,16 @@ body {
   <div style="display:flex;align-items:center;gap:10px">
     <button class="tut-reopen-btn" id="tutReopenBtn"
             onclick="openTutorial()" style="display:none">❓ 튜토리얼</button>
+    <div class="bgm-ctrl">
+      <button class="bgm-btn" id="bgmBtn" onclick="bgmToggle()" title="음악 켜기/끄기">🎵</button>
+      <input class="bgm-vol" id="bgmVol" type="range" min="0" max="1" step="0.05" value="0.35"
+             oninput="bgmSetVol(this.value)" title="음량">
+    </div>
     <div class="gold-display" id="goldDisplay">💰 <span id="goldAmt">0</span> G</div>
   </div>
 </div>
+
+<audio id="bgmAudio" src="./bgm.mp3" loop preload="auto"></audio>
 
 <!-- Focus Screen Overlay -->
 <div id="focusScreen" class="focus-screen hidden">
@@ -1099,6 +1131,43 @@ function checkTutorial() {
 }
 
 
+/* ===== BGM ===== */
+let bgmOn = false;
+
+function bgmToggle() {
+  const audio = document.getElementById('bgmAudio');
+  const btn   = document.getElementById('bgmBtn');
+  if (bgmOn) {
+    audio.pause();
+    bgmOn = false;
+    btn.textContent = '🔇';
+    btn.classList.add('muted');
+  } else {
+    audio.play().catch(() => {});
+    bgmOn = true;
+    btn.textContent = '🎵';
+    btn.classList.remove('muted');
+  }
+}
+
+function bgmSetVol(v) {
+  document.getElementById('bgmAudio').volume = v;
+}
+
+function bgmAutoStart() {
+  const audio = document.getElementById('bgmAudio');
+  audio.volume = +document.getElementById('bgmVol').value;
+  audio.play().then(() => {
+    bgmOn = true;
+  }).catch(() => {
+    // autoplay blocked — wait for first user interaction
+    document.addEventListener('click', function startOnce() {
+      audio.play().then(() => { bgmOn = true; }).catch(() => {});
+      document.removeEventListener('click', startOnce);
+    }, { once: true });
+  });
+}
+
 /* ===== Init ===== */
 function init() {
   renderShelf(); renderInventory(); renderShop(); renderHired(); renderFuel();
@@ -1133,6 +1202,8 @@ function init() {
       document.querySelectorAll('.hired-rat.open').forEach(r => r.classList.remove('open'));
     }
   });
+
+  bgmAutoStart();
 }
 
 /* ===== Baking ===== */
