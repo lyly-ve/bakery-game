@@ -712,7 +712,7 @@ body {
 /* ── Quest Panel ── */
 .quest-panel {
   position: fixed; bottom: 20px; left: 20px; z-index: 300;
-  background: var(--panel); border: 2px solid var(--border);
+  background: #fafaf0; border: 2.5px solid #a07840;
   border-radius: 13px; padding: 11px 14px; min-width: 210px;
   box-shadow: 0 4px 18px rgba(0,0,0,.18);
   animation: questIn .4s ease; transition: opacity .3s;
@@ -721,6 +721,28 @@ body {
 @keyframes questIn {
   from { opacity:0; transform:translateX(-18px); }
   to   { opacity:1; transform:translateX(0); }
+}
+@keyframes questPop {
+  0%,100% { opacity:1; transform:translateX(0) scale(1); }
+  30%     { opacity:.6; transform:translateX(-4px) scale(.97); }
+  60%     { transform:translateX(2px) scale(1.02); }
+}
+
+.quest-excl {
+  position: absolute; top: -10px; right: -10px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #e03030; color: white;
+  font-size: 0.82rem; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(200,0,0,.35);
+  animation: exclBounce 1s ease-in-out infinite;
+  line-height: 1;
+}
+.quest-excl.hidden { display: none; }
+@keyframes exclBounce {
+  0%,100% { transform: translateY(0) scale(1); }
+  40%     { transform: translateY(-5px) scale(1.1); }
+  60%     { transform: translateY(-2px) scale(1.05); }
 }
 .quest-hd {
   display: flex; align-items: center; justify-content: space-between;
@@ -1011,7 +1033,8 @@ body {
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- Quest Panel -->
-<div class="quest-panel hidden" id="questPanel">
+<div class="quest-panel hidden" id="questPanel" style="position:relative">
+  <div class="quest-excl" id="questExcl">!</div>
   <div class="quest-hd">
     <span class="quest-hd-label">📋 튜토리얼</span>
     <div class="quest-dots" id="questDots"></div>
@@ -2037,12 +2060,15 @@ function questComplete(id) {
   questIdx++;
   localStorage.setItem(QUEST_KEY, questIdx);
 
+  // 완료 직후 느낌표 숨기기
+  const excl = document.getElementById('questExcl');
+  excl.classList.add('hidden');
+
   setTimeout(() => {
     badge.remove();
     questLocked = false;
 
     if (questIdx >= QUESTS.length) {
-      // 모든 퀘스트 완료
       showToast('🏆 베이커리 마스터! 모든 튜토리얼 완료!', 'gold');
       setSpeech('🏆 모든 퀘스트 완료! 진짜 베이커리 마스터냥~!');
       addLog('🏆 모든 튜토리얼 퀘스트 완료!');
@@ -2051,6 +2077,12 @@ function questComplete(id) {
       setTimeout(() => panel.classList.add('hidden'), 400);
     } else {
       renderQuestPanel();
+      // 새 퀘스트 등장: 패널 깜빡임 + 느낌표 재등장
+      const panel = document.getElementById('questPanel');
+      panel.style.animation = 'none';
+      void panel.offsetWidth;
+      panel.style.animation = 'questPop .5s ease';
+      excl.classList.remove('hidden');
     }
   }, 1800);
 }
