@@ -777,7 +777,8 @@ body {
   </div>
 </div>
 
-<audio id="bgmAudio" src="./bgm.mp3" loop preload="auto"></audio>
+<audio id="bgmNormal" src="./bgm.mp3"  loop preload="auto"></audio>
+<audio id="bgmFocus"  src="./bgm2.mp3" loop preload="auto"></audio>
 
 <!-- Focus Screen Overlay -->
 <div id="focusScreen" class="focus-screen hidden">
@@ -1132,37 +1133,97 @@ function checkTutorial() {
 
 
 /* ===== BGM ===== */
-let bgmOn = false;
+let bgmOn      = false;
+let bgmFocused = false; // 현재 집중 트랙 재생 중
+const BGM_FADE = 800;   // 크로스페이드 ms
+
+function bgmGetVol() { return +document.getElementById('bgmVol').value; }
 
 function bgmToggle() {
-  const audio = document.getElementById('bgmAudio');
-  const btn   = document.getElementById('bgmBtn');
+  const btn = document.getElementById('bgmBtn');
   if (bgmOn) {
-    audio.pause();
+    bgmFadeOut(document.getElementById('bgmNormal'));
+    bgmFadeOut(document.getElementById('bgmFocus'));
     bgmOn = false;
     btn.textContent = '🔇';
     btn.classList.add('muted');
   } else {
-    audio.play().catch(() => {});
     bgmOn = true;
     btn.textContent = '🎵';
     btn.classList.remove('muted');
+    bgmFocused ? bgmFadeIn(document.getElementById('bgmFocus'))
+               : bgmFadeIn(document.getElementById('bgmNormal'));
   }
 }
 
 function bgmSetVol(v) {
-  document.getElementById('bgmAudio').volume = v;
+  const active = bgmFocused ? document.getElementById('bgmFocus')
+                             : document.getElementById('bgmNormal');
+  if (bgmOn) active.volume = v;
+}
+
+function bgmSwitchTo(mode) {
+  // mode: 'normal' | 'focus'
+  const toFocus = (mode === 'focus');
+  if (toFocus === bgmFocused) return;
+  bgmFocused = toFocus;
+  if (!bgmOn) return;
+  const fadeIn  = document.getElementById(toFocus ? 'bgmFocus'  : 'bgmNormal');
+  const fadeOut = document.getElementById(toFocus ? 'bgmNormal' : 'bgmFocus');
+  bgmCrossfade(fadeOut, fadeIn);
+}
+
+function bgmCrossfade(outEl, inEl) {
+  const vol    = bgmGetVol();
+  const steps  = 20;
+  const dt     = BGM_FADE / steps;
+  inEl.volume  = 0;
+  inEl.play().catch(() => {});
+  let i = 0;
+  const t = setInterval(() => {
+    i++;
+    outEl.volume = Math.max(0, vol * (1 - i / steps));
+    inEl.volume  = Math.min(vol, vol * (i / steps));
+    if (i >= steps) {
+      clearInterval(t);
+      outEl.pause();
+      outEl.volume = vol;
+    }
+  }, dt);
+}
+
+function bgmFadeIn(el) {
+  const vol = bgmGetVol();
+  el.volume = 0;
+  el.play().catch(() => {});
+  const steps = 16, dt = BGM_FADE / steps;
+  let i = 0;
+  const t = setInterval(() => {
+    i++;
+    el.volume = Math.min(vol, vol * (i / steps));
+    if (i >= steps) clearInterval(t);
+  }, dt);
+}
+
+function bgmFadeOut(el) {
+  const start = el.volume;
+  const steps = 16, dt = BGM_FADE / steps;
+  let i = 0;
+  const t = setInterval(() => {
+    i++;
+    el.volume = Math.max(0, start * (1 - i / steps));
+    if (i >= steps) { clearInterval(t); el.pause(); el.volume = start; }
+  }, dt);
 }
 
 function bgmAutoStart() {
-  const audio = document.getElementById('bgmAudio');
-  audio.volume = +document.getElementById('bgmVol').value;
-  audio.play().then(() => {
+  const normal = document.getElementById('bgmNormal');
+  normal.volume = bgmGetVol();
+  normal.play().then(() => {
     bgmOn = true;
   }).catch(() => {
-    // autoplay blocked — wait for first user interaction
     document.addEventListener('click', function startOnce() {
-      audio.play().then(() => { bgmOn = true; }).catch(() => {});
+      normal.play().then(() => { bgmOn = true; }).catch(() => {});
       document.removeEventListener('click', startOnce);
     }, { once: true });
   });
@@ -1828,6 +1889,7 @@ function showFocusScreen() {
   document.getElementById('focusMsg').textContent =
     S.isStopwatch ? '자유 집중 중... 🐭 쥐들도 열심히 일하고 있어요!' :
                     '집중 중... 🐭 쥐들이 열심히 일하고 있어요!';
+  bgmSwitchTo('focus');
 }
 
 function hideFocusScreen() {
@@ -1836,6 +1898,7 @@ function hideFocusScreen() {
   screen.classList.remove('mini');
   document.querySelector('.game').style.display = '';
   if (S.rushOn) document.getElementById('rushBanner').style.display = '';
+  bgmSwitchTo('normal');
 }
 
 function toggleMiniMode() {
