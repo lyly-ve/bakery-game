@@ -729,14 +729,13 @@ body {
 }
 
 .quest-excl {
-  position: absolute; top: -10px; right: -10px;
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 20px; height: 20px; border-radius: 50%;
   background: #e03030; color: white;
-  font-size: 0.82rem; font-weight: bold;
+  font-size: 0.8rem; font-weight: bold;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 6px rgba(200,0,0,.35);
   animation: exclBounce 1s ease-in-out infinite;
-  line-height: 1;
+  flex-shrink: 0; line-height: 1;
 }
 .quest-excl.hidden { display: none; }
 @keyframes exclBounce {
@@ -1033,14 +1032,14 @@ body {
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- Quest Panel -->
-<div class="quest-panel hidden" id="questPanel" style="position:relative">
-  <div class="quest-excl" id="questExcl">!</div>
+<div class="quest-panel hidden" id="questPanel">
   <div class="quest-hd">
     <span class="quest-hd-label">📋 튜토리얼</span>
     <div class="quest-dots" id="questDots"></div>
   </div>
   <div class="quest-body">
     <span class="quest-icon" id="questIcon">🍞</span>
+    <div class="quest-excl" id="questExcl">!</div>
     <span id="questText">빵을 처음 구워보세요!</span>
   </div>
   <div class="quest-reward-hint">완료 시 +100G 🪙</div>
