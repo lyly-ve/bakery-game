@@ -460,6 +460,157 @@ body {
 ::-webkit-scrollbar-track { background: #f0dfc0; border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
+/* ── Focus Screen ── */
+.focus-screen {
+  position: fixed; inset: 0; z-index: 500;
+  background: linear-gradient(160deg, #1a0e06 0%, #2d1a0a 50%, #1a0e06 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.focus-screen.hidden { display: none; }
+.focus-screen.mini {
+  inset: auto; bottom: 24px; right: 24px;
+  width: 270px; border-radius: 22px;
+  border: 3px solid var(--border);
+  box-shadow: 0 10px 40px rgba(0,0,0,.55);
+}
+.focus-content {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 16px;
+  padding: 44px 32px; max-width: 440px; width: 100%;
+}
+.focus-screen.mini .focus-content { padding: 16px 16px 14px; gap: 9px; }
+
+.focus-title {
+  color: rgba(255,220,160,.65); font-size: 0.8rem;
+  letter-spacing: 3px; font-weight: 600; text-transform: uppercase;
+}
+.focus-screen.mini .focus-title { display: none; }
+
+.focus-moka-img {
+  width: 150px; height: 150px; object-fit: contain;
+  animation: focusSleep 5s ease-in-out infinite;
+  filter: brightness(.88) saturate(.85);
+}
+.focus-screen.mini .focus-moka-img { width: 64px; height: 64px; }
+@keyframes focusSleep {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-2px) scale(1.004); }
+}
+
+.focus-timer-big {
+  font-size: 4.5rem; font-weight: bold;
+  color: #ffe8b0; font-family: 'Courier New', monospace;
+  letter-spacing: 5px; line-height: 1;
+  text-shadow: 0 0 30px rgba(255,200,80,.35);
+}
+.focus-screen.mini .focus-timer-big { font-size: 2rem; letter-spacing: 2px; }
+
+.focus-msg {
+  color: rgba(255,220,160,.75); font-size: 0.87rem;
+  text-align: center; line-height: 1.6;
+}
+.focus-screen.mini .focus-msg { font-size: 0.7rem; }
+
+.focus-fuel {
+  display: flex; gap: 5px; align-items: center;
+}
+.focus-fpip {
+  width: 24px; height: 9px; border-radius: 5px;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18);
+  transition: background .3s;
+}
+.focus-fpip.on { background: var(--fuel-on); box-shadow: 0 0 6px rgba(232,122,48,.5); }
+.focus-screen.mini .focus-fpip { width: 15px; height: 7px; }
+
+.focus-goal {
+  color: rgba(255,220,160,.7); font-size: 0.83rem; text-align: center;
+}
+.focus-screen.mini .focus-goal { font-size: 0.7rem; }
+
+.focus-rats {
+  display: flex; gap: 14px; font-size: 1.5rem;
+  color: rgba(255,255,255,.85);
+}
+.focus-screen.mini .focus-rats { display: none; }
+
+.focus-controls { display: flex; gap: 10px; }
+.focus-stop-btn {
+  background: rgba(255,255,255,.1); color: #ffe8b0;
+  border: 2px solid rgba(255,220,160,.35);
+  border-radius: 11px; padding: 10px 26px;
+  font-size: 0.9rem; font-weight: bold; cursor: pointer;
+  transition: background .15s;
+}
+.focus-stop-btn:hover { background: rgba(255,255,255,.2); }
+.focus-screen.mini .focus-stop-btn { padding: 6px 14px; font-size: 0.76rem; }
+
+.focus-mini-btn {
+  background: rgba(255,255,255,.07); color: rgba(255,220,160,.55);
+  border: 1.5px solid rgba(255,220,160,.2);
+  border-radius: 9px; padding: 10px 16px;
+  font-size: 0.82rem; cursor: pointer; transition: background .15s;
+}
+.focus-mini-btn:hover { background: rgba(255,255,255,.15); }
+.focus-screen.mini .focus-mini-btn { padding: 6px 10px; font-size: 0.72rem; }
+
+.focus-fuel-gain {
+  position: fixed; top: 42%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.6rem; font-weight: bold; color: #ffd060;
+  text-shadow: 0 0 30px rgba(255,200,0,.8);
+  animation: fuelGain 2.2s ease-out forwards;
+  pointer-events: none; z-index: 600;
+}
+@keyframes fuelGain {
+  0%   { opacity:0; transform:translate(-50%,-50%) scale(.5); }
+  20%  { opacity:1; transform:translate(-50%,-50%) scale(1.25); }
+  65%  { opacity:1; transform:translate(-50%,-58%) scale(1); }
+  100% { opacity:0; transform:translate(-50%,-80%) scale(.8); }
+}
+
+/* ── Goal UI ── */
+.goal-row {
+  display: flex; align-items: center; gap: 6px;
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 5px 8px;
+}
+.goal-adj {
+  background: var(--btn); color: white; border: none;
+  border-radius: 5px; width: 22px; height: 22px;
+  font-size: 1rem; cursor: pointer; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background .15s;
+}
+.goal-adj:hover { background: var(--btn-hover); }
+.goal-label { flex: 1; text-align: center; font-weight: 600; font-size: 0.78rem; color: var(--accent); }
+.goal-progress { color: #6a9e50; font-weight: bold; font-size: 0.73rem; white-space: nowrap; }
+
+/* ── Stopwatch button ── */
+.pomo-sw-btn {
+  width: 100%; background: white; border: 2px solid var(--border);
+  border-radius: 7px; padding: 5px 8px; cursor: pointer;
+  font-size: 0.76rem; font-weight: bold; color: var(--text);
+  transition: all .15s; text-align: center;
+}
+.pomo-sw-btn:hover { background: #ffe8cc; border-color: var(--accent); }
+.pomo-sw-btn.active {
+  background: #ffe8cc; border-color: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--accent);
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .game { grid-template-columns: 1fr; padding: 8px; gap: 8px; }
+  .inventory-panel, .shop-panel { grid-column: 1; }
+  .shop-grid { grid-template-columns: repeat(2,1fr); }
+  .pomo-sess-row { flex-wrap: wrap; }
+  .pomo-sess-btn { min-height: 34px; font-size: 0.7rem; }
+  .bake-btn, .pomo-btn, .sc-btn { min-height: 40px; }
+  .cat-area { min-height: 130px; }
+  .moka-img { width: 100px; height: 100px; }
+  .focus-timer-big { font-size: 3.5rem; }
+}
+
 /* ── Tutorial Modal ── */
 .tut-overlay {
   position: fixed; inset: 0; z-index: 2000;
@@ -596,6 +747,23 @@ body {
   </div>
 </div>
 
+<!-- Focus Screen Overlay -->
+<div id="focusScreen" class="focus-screen hidden">
+  <div class="focus-content">
+    <div class="focus-title">🌙 집중 모드</div>
+    <img class="focus-moka-img" src="./Mocka.png" alt="모카">
+    <div class="focus-timer-big" id="focusTimer">25:00</div>
+    <div class="focus-msg" id="focusMsg">집중 중... 🐭 쥐들이 열심히 일하고 있어요!</div>
+    <div class="focus-fuel" id="focusFuel"></div>
+    <div class="focus-goal" id="focusGoal"></div>
+    <div class="focus-rats" id="focusRats">🐭🪧 &nbsp; 🐭🪧 &nbsp; 🐭🪧</div>
+    <div class="focus-controls">
+      <button class="focus-mini-btn" onclick="toggleMiniMode()">🪟 미니</button>
+      <button class="focus-stop-btn" onclick="focusStop()">⏹ 중단</button>
+    </div>
+  </div>
+</div>
+
 <!-- Game Grid -->
 <div class="game">
 
@@ -608,35 +776,35 @@ body {
         <span class="b-emoji">🥐</span>
         <div class="bread-info">
           <span class="bread-name">모닝빵</span>
-          <span class="bread-stats">⏱ 2초 | 💰 300G</span>
+          <span class="bread-stats">⏱ 2초 | 💰 100G</span>
         </div>
       </div>
       <div class="bread-option" data-type="muffin">
         <span class="b-emoji">🧁</span>
         <div class="bread-info">
           <span class="bread-name">머핀</span>
-          <span class="bread-stats">⏱ 3초 | 💰 400G</span>
+          <span class="bread-stats">⏱ 3초 | 💰 300G</span>
         </div>
       </div>
       <div class="bread-option" data-type="basic">
         <span class="b-emoji">🍞</span>
         <div class="bread-info">
           <span class="bread-name">기본식빵</span>
-          <span class="bread-stats">⏱ 5초 | 💰 500G</span>
+          <span class="bread-stats">⏱ 5초 | 💰 600G</span>
         </div>
       </div>
       <div class="bread-option" data-type="cheese">
         <span class="b-emoji">🧀</span>
         <div class="bread-info">
           <span class="bread-name">치즈식빵</span>
-          <span class="bread-stats">⏱ 8초 | 💰 800G</span>
+          <span class="bread-stats">⏱ 8초 | 💰 1,200G</span>
         </div>
       </div>
       <div class="bread-option" data-type="choco">
         <span class="b-emoji">🍫</span>
         <div class="bread-info">
           <span class="bread-name">초코식빵</span>
-          <span class="bread-stats">⏱ 12초 | 💰 1200G</span>
+          <span class="bread-stats">⏱ 12초 | 💰 2,400G</span>
         </div>
       </div>
     </div>
@@ -683,9 +851,20 @@ body {
       <div class="panel-title">⏱ 뽀모도로 집중 연료</div>
 
       <div class="pomo-sess-row" id="pomoSessRow">
-        <button class="pomo-sess-btn active" data-mins="50">🍅 50분</button>
-        <button class="pomo-sess-btn" data-mins="25">⏰ 25분</button>
-        <button class="pomo-sess-btn" data-mins="15">☕ 15분</button>
+        <button class="pomo-sess-btn" data-mins="5">5분</button>
+        <button class="pomo-sess-btn" data-mins="15">15분</button>
+        <button class="pomo-sess-btn active" data-mins="25">25분</button>
+        <button class="pomo-sess-btn" data-mins="40">40분</button>
+        <button class="pomo-sess-btn" data-mins="50">50분</button>
+      </div>
+
+      <button class="pomo-sw-btn" id="pomoSwBtn" onclick="swToggle()">🕐 자유 집중 (스톱워치)</button>
+
+      <div class="goal-row">
+        <button class="goal-adj" onclick="adjustGoal(-1)">−</button>
+        <div class="goal-label" id="goalLabel">목표: 4세트</div>
+        <button class="goal-adj" onclick="adjustGoal(1)">+</button>
+        <span class="goal-progress" id="goalProgress">0/4 완료</span>
       </div>
 
       <div class="pomo-display">
@@ -747,11 +926,11 @@ body {
 <script>
 /* ===== Constants ===== */
 const BREADS = {
-  morning:{ name:'모닝빵',   emoji:'🥐', time:2000,  price:300  },
-  muffin: { name:'머핀',     emoji:'🧁', time:3000,  price:400  },
-  basic:  { name:'기본식빵', emoji:'🍞', time:5000,  price:500  },
-  cheese: { name:'치즈식빵', emoji:'🧀', time:8000,  price:800  },
-  choco:  { name:'초코식빵', emoji:'🍫', time:12000, price:1200 },
+  morning:{ name:'모닝빵',   emoji:'🥐', time:2000,  price:100  },
+  muffin: { name:'머핀',     emoji:'🧁', time:3000,  price:300  },
+  basic:  { name:'기본식빵', emoji:'🍞', time:5000,  price:600  },
+  cheese: { name:'치즈식빵', emoji:'🧀', time:8000,  price:1200 },
+  choco:  { name:'초코식빵', emoji:'🍫', time:12000, price:2400 },
 };
 const BKEYS = Object.keys(BREADS);
 
@@ -789,8 +968,8 @@ const S = {
   ratTimers: {partTime:null, baker:null, manager:null},
   nextRatId: 0,
 
-  pomoMins: 50,
-  pomoLeft: 50*60,
+  pomoMins: 25,
+  pomoLeft: 25*60,
   pomoRunning: false,
   pomoTick: null,
 
@@ -800,6 +979,13 @@ const S = {
   rushOn: false,
   rushLeft: 0,
   rushTick: null,
+
+  goalSessions: 4,
+  doneSession: 0,
+  swRunning: false,
+  swElapsed: 0,
+  swTick: null,
+  isStopwatch: false,
 };
 
 /* ===== Tutorial ===== */
@@ -915,7 +1101,7 @@ function checkTutorial() {
 /* ===== Init ===== */
 function init() {
   renderShelf(); renderInventory(); renderShop(); renderHired(); renderFuel();
-  updatePomoDisplay();
+  updatePomoDisplay(); renderGoal();
   scheduleCustomer(); rotateCatMsg(); startFuelDrain();
   checkTutorial();
 
@@ -929,16 +1115,18 @@ function init() {
 
   document.getElementById('pomoSessRow').addEventListener('click', e => {
     const btn = e.target.closest('.pomo-sess-btn');
-    if (!btn || S.pomoRunning) return;
+    if (!btn || S.pomoRunning || S.swRunning) return;
+    S.isStopwatch = false;
     S.pomoMins = +btn.dataset.mins;
     S.pomoLeft = S.pomoMins * 60;
     document.querySelectorAll('.pomo-sess-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    document.getElementById('pomoSwBtn').classList.remove('active');
+    document.getElementById('pomoSwBtn').textContent = '🕐 자유 집중 (스톱워치)';
     updatePomoDisplay();
     document.getElementById('pomoStatus').textContent = '세션 준비';
   });
 
-  // close hired-rat popups when clicking elsewhere
   document.addEventListener('click', e => {
     if (!e.target.closest('.hired-rat')) {
       document.querySelectorAll('.hired-rat.open').forEach(r => r.classList.remove('open'));
@@ -1129,39 +1317,38 @@ function spawnCustomer() {
 
 /* ===== Pomodoro ===== */
 function pomoToggle() {
+  if (S.swRunning) { showToast('자유 집중 중이에요! 중단 후 시작하세요.', 'warn'); return; }
   if (!S.pomoRunning) pomoStart();
-  // running 중 재클릭 무시
 }
 
 function pomoStart() {
   if (S.pomoRunning) return;
-  clearInterval(S.pomoTick); // 이중 interval 방지
+  clearInterval(S.pomoTick);
   S.pomoRunning = true;
   document.getElementById('pomoBtn').textContent = '⏱ 진행 중...';
   document.getElementById('pomoStatus').textContent = '집중 중...';
   setSpeech('뽀모도로 시작! 집중해요 냥!');
   addLog(`⏱ 뽀모도로 ${S.pomoMins}분 시작!`);
   S.pomoTick = setInterval(pomoPip, 1000);
-}
-
-function pomoPause() {
-  clearInterval(S.pomoTick);
-  S.pomoRunning = false;
-  document.getElementById('pomoBtn').textContent = '▶ 시작';
-  document.getElementById('pomoStatus').textContent = '리셋됨';
-  setSpeech('잠깐 쉬는 중... 냥');
+  showFocusScreen();
 }
 
 function pomoReset() {
-  pomoPause();
+  clearInterval(S.pomoTick);   S.pomoRunning = false;
+  clearInterval(S.swTick);     S.swRunning = false; S.isStopwatch = false; S.swElapsed = 0;
+  document.getElementById('pomoBtn').textContent = '▶ 시작';
+  document.getElementById('pomoStatus').textContent = '세션 준비';
+  document.getElementById('pomoSwBtn').classList.remove('active');
+  document.getElementById('pomoSwBtn').textContent = '🕐 자유 집중 (스톱워치)';
   S.pomoLeft = S.pomoMins * 60;
   updatePomoDisplay();
-  document.getElementById('pomoStatus').textContent = '세션 준비';
+  hideFocusScreen();
 }
 
 function pomoPip() {
   S.pomoLeft--;
   updatePomoDisplay();
+  updateFocusTimer();
   if (S.pomoLeft <= 0) pomoComplete();
 }
 
@@ -1171,17 +1358,36 @@ function pomoComplete() {
   document.getElementById('pomoBtn').textContent = '▶ 다시 시작';
   document.getElementById('pomoStatus').textContent = '완료! 🎉';
 
-  // Fuel gain: 50→+10(대이득), 25→+5(이득), 15→+3(본전)
-  const gain = S.pomoMins === 50 ? 10 : S.pomoMins === 25 ? 5 : 3;
+  const gain = Math.max(1, Math.round(S.pomoMins / 10));
   S.fuel = Math.min(MAX_FUEL, S.fuel + gain);
   renderFuel();
-  if (S.fuel > 0) updateRatSpeed(); // wake up rats if they were sleeping
+  updateFocusFuel();
+  showFuelGainAnim(gain);
+  if (S.fuel > 0) updateRatSpeed();
+
+  if (S.goalSessions > 0) {
+    S.doneSession++;
+    renderGoal();
+    updateFocusGoal();
+    if (S.doneSession >= S.goalSessions) {
+      const bonus = S.goalSessions * 500;
+      S.gold += bonus;
+      document.getElementById('goldAmt').textContent = S.gold.toLocaleString();
+      setTimeout(() => {
+        showToast(`🎯 목표 달성! ${S.goalSessions}세트 완료! +${bonus.toLocaleString()}G 보너스!`, 'gold');
+        addLog(`🎯 목표 달성! +${bonus.toLocaleString()}G 보너스!`);
+      }, 600);
+      S.doneSession = 0;
+      renderGoal();
+    }
+  }
 
   addLog(`✨ 뽀모도로 ${S.pomoMins}분 완료! 집중 연료 +${gain}`);
   showToast(`✨ 집중 완료! 연료 +${gain} 🔥`, 'pomo');
   setSpeech('집중 완료! 고생했어요 냥~ 🔥');
 
   startRushTime();
+  setTimeout(() => hideFocusScreen(), 3000);
 }
 
 function updatePomoDisplay() {
@@ -1217,12 +1423,10 @@ function renderFuel() {
   document.getElementById('fuelLabel').textContent =
     S.fuel > 0 ? `🔥 ${S.fuel}/${MAX_FUEL}` : `💤 연료 없음`;
 
-  // Update rat walker sleepy state
   document.querySelectorAll('.rat-walker').forEach(r =>
     r.classList.toggle('sleepy', S.fuel === 0));
-
-  // Zzz animation
   document.getElementById('zzzWrap').classList.toggle('on', S.fuel === 0);
+  updateFocusFuel();
 }
 
 function ratInterval(type) {
@@ -1539,6 +1743,157 @@ function showToast(msg, type='') {
   t.textContent = msg;
   c.appendChild(t);
   setTimeout(() => t.remove(), 2800);
+}
+
+/* ===== Focus Screen ===== */
+function showFocusScreen() {
+  const screen = document.getElementById('focusScreen');
+  screen.classList.remove('hidden', 'mini');
+  document.querySelector('.game').style.display = 'none';
+  document.getElementById('rushBanner').style.display = 'none';
+  updateFocusFuel();
+  updateFocusGoal();
+  updateFocusTimer();
+  document.getElementById('focusMsg').textContent =
+    S.isStopwatch ? '자유 집중 중... 🐭 쥐들도 열심히 일하고 있어요!' :
+                    '집중 중... 🐭 쥐들이 열심히 일하고 있어요!';
+}
+
+function hideFocusScreen() {
+  const screen = document.getElementById('focusScreen');
+  screen.classList.add('hidden');
+  screen.classList.remove('mini');
+  document.querySelector('.game').style.display = '';
+  if (S.rushOn) document.getElementById('rushBanner').style.display = '';
+}
+
+function toggleMiniMode() {
+  const screen = document.getElementById('focusScreen');
+  const game   = document.querySelector('.game');
+  if (screen.classList.contains('mini')) {
+    screen.classList.remove('mini');
+    game.style.display = 'none';
+  } else {
+    screen.classList.add('mini');
+    game.style.display = '';
+    if (S.rushOn) document.getElementById('rushBanner').style.display = '';
+  }
+}
+
+function focusStop() {
+  if (S.isStopwatch) swStop();
+  else pomoReset();
+}
+
+function updateFocusTimer() {
+  const el = document.getElementById('focusTimer');
+  if (!el) return;
+  let secs = S.isStopwatch ? S.swElapsed : S.pomoLeft;
+  const m  = String(Math.floor(secs/60)).padStart(2,'0');
+  const s  = String(secs%60).padStart(2,'0');
+  el.textContent = `${m}:${s}`;
+}
+
+function updateFocusFuel() {
+  const c = document.getElementById('focusFuel');
+  if (!c) return;
+  c.innerHTML = '';
+  for (let i = 0; i < MAX_FUEL; i++) {
+    const p = document.createElement('div');
+    p.className = 'focus-fpip' + (i < S.fuel ? ' on' : '');
+    c.appendChild(p);
+  }
+}
+
+function updateFocusGoal() {
+  const c = document.getElementById('focusGoal');
+  if (!c) return;
+  c.textContent = S.goalSessions > 0
+    ? `🎯 ${S.doneSession} / ${S.goalSessions} 세션 완료`
+    : '';
+}
+
+function showFuelGainAnim(gain) {
+  const el = document.createElement('div');
+  el.className   = 'focus-fuel-gain';
+  el.textContent = `+${gain} 연료 🔥`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2300);
+}
+
+/* ===== Goal ===== */
+function renderGoal() {
+  document.getElementById('goalLabel').textContent =
+    S.goalSessions === 0 ? '목표: 없음' : `목표: ${S.goalSessions}세트`;
+  document.getElementById('goalProgress').textContent =
+    S.goalSessions === 0 ? '' : `${S.doneSession}/${S.goalSessions} 완료`;
+}
+
+function adjustGoal(delta) {
+  if (S.pomoRunning || S.swRunning) return;
+  S.goalSessions = Math.max(0, Math.min(8, S.goalSessions + delta));
+  S.doneSession  = 0;
+  renderGoal();
+}
+
+/* ===== Stopwatch ===== */
+function swToggle() {
+  if (S.swRunning) swStop();
+  else swStart();
+}
+
+function swStart() {
+  if (S.pomoRunning) { showToast('뽀모도로 진행 중이에요!', 'warn'); return; }
+  S.isStopwatch = true;
+  S.swRunning   = true;
+  S.swElapsed   = 0;
+  document.getElementById('pomoSwBtn').classList.add('active');
+  document.getElementById('pomoSwBtn').textContent = '⏹ 자유 집중 중단';
+  document.getElementById('pomoStatus').textContent = '자유 집중 중...';
+  addLog('🕐 자유 집중 시작!');
+  setSpeech('자유집중 시작! 화이팅 냥~');
+  showFocusScreen();
+  S.swTick = setInterval(() => {
+    S.swElapsed++;
+    updateFocusTimer();
+    const m = String(Math.floor(S.swElapsed/60)).padStart(2,'0');
+    const s = String(S.swElapsed%60).padStart(2,'0');
+    document.getElementById('pomoTime').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function swStop() {
+  clearInterval(S.swTick);
+  S.swRunning   = false;
+  S.isStopwatch = false;
+  document.getElementById('pomoSwBtn').classList.remove('active');
+  document.getElementById('pomoSwBtn').textContent = '🕐 자유 집중 (스톱워치)';
+
+  const elapsedMins = Math.min(50, Math.floor(S.swElapsed / 60));
+  if (elapsedMins < 1) {
+    showToast('1분 이상 집중해야 연료를 받을 수 있어요!', 'warn');
+    hideFocusScreen();
+    S.swElapsed = 0;
+    document.getElementById('pomoTime').textContent = '00:00';
+    document.getElementById('pomoStatus').textContent = '세션 준비';
+    return;
+  }
+
+  const gain = Math.max(1, Math.round(elapsedMins / 10));
+  S.fuel = Math.min(MAX_FUEL, S.fuel + gain);
+  renderFuel();
+  updateFocusFuel();
+  showFuelGainAnim(gain);
+  if (S.fuel > 0) updateRatSpeed();
+
+  addLog(`🕐 자유 집중 ${elapsedMins}분 완료! 연료 +${gain}`);
+  showToast(`🕐 자유 집중 ${elapsedMins}분! 연료 +${gain} 🔥`, 'pomo');
+  setSpeech('자유집중 완료! 수고했어요 냥~ 🔥');
+
+  S.swElapsed = 0;
+  document.getElementById('pomoTime').textContent = '00:00';
+  document.getElementById('pomoStatus').textContent = '완료! 🎉';
+  setTimeout(() => hideFocusScreen(), 2500);
 }
 
 init();
