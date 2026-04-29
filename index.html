@@ -1135,9 +1135,11 @@ function checkTutorial() {
 /* ===== BGM ===== */
 let bgmOn      = false;
 let bgmFocused = false;
-const BGM_FADE = 900;
+let bgmTargetVol = 0.35;
+const BGM_FADE_STEPS = 20;
+const BGM_FADE_MS    = 1000;
 
-function bgmGetVol() { return parseFloat(document.getElementById('bgmVol').value); }
+function bgmGetVol() { return bgmTargetVol; }
 
 function bgmSetBtn(on) {
   const btn = document.getElementById('bgmBtn');
@@ -1159,12 +1161,13 @@ function bgmToggle() {
 }
 
 function bgmSetVol(v) {
-  const vol = parseFloat(v);
-  // 두 트랙 모두 볼륨 업데이트 (fade 중에도 비율 유지)
+  bgmTargetVol = parseFloat(v);
   const normal = document.getElementById('bgmNormal');
   const focus  = document.getElementById('bgmFocus');
-  if (!normal.paused) normal.volume = vol;
-  if (!focus.paused)  focus.volume  = vol;
+  if (bgmOn) {
+    if (!normal.paused) normal.volume = bgmTargetVol;
+    if (!focus.paused)  focus.volume  = bgmTargetVol;
+  }
 }
 
 function bgmSwitchTo(mode) {
@@ -1180,66 +1183,68 @@ function bgmSwitchTo(mode) {
 function bgmCrossfade(outId, inId) {
   const outEl = document.getElementById(outId);
   const inEl  = document.getElementById(inId);
-  const vol   = bgmGetVol();
-  const steps = 18, dt = BGM_FADE / steps;
-  const startOut = outEl.volume;
+  const vol   = bgmTargetVol;
+  const dt    = BGM_FADE_MS / BGM_FADE_STEPS;
+  // outEl이 이미 정지 상태면 fade-in만
+  if (outEl.paused) { bgmFadeInEl(inId); return; }
+  const startVol = outEl.volume || vol;
   inEl.volume = 0;
   inEl.play().catch(() => {});
   let i = 0;
   const t = setInterval(() => {
     i++;
-    const p = i / steps;
-    outEl.volume = Math.max(0, startOut * (1 - p));
+    const p = i / BGM_FADE_STEPS;
+    outEl.volume = Math.max(0, startVol * (1 - p));
     inEl.volume  = Math.min(vol, vol * p);
-    if (i >= steps) {
+    if (i >= BGM_FADE_STEPS) {
       clearInterval(t);
       outEl.pause();
-      outEl.currentTime = 0;
-      outEl.volume = vol;
+      outEl.volume = vol; // 볼륨만 복원, 재생 위치는 유지
     }
   }, dt);
 }
 
 function bgmFadeInEl(id) {
   const el  = document.getElementById(id);
-  const vol = bgmGetVol();
+  const vol = bgmTargetVol;
   el.volume = 0;
   el.play().catch(() => {});
-  const steps = 18, dt = BGM_FADE / steps;
+  const dt = BGM_FADE_MS / BGM_FADE_STEPS;
   let i = 0;
   const t = setInterval(() => {
     i++;
-    el.volume = Math.min(vol, vol * (i / steps));
-    if (i >= steps) clearInterval(t);
+    el.volume = Math.min(vol, vol * (i / BGM_FADE_STEPS));
+    if (i >= BGM_FADE_STEPS) clearInterval(t);
   }, dt);
 }
 
 function bgmFadeOutEl(id) {
-  const el    = document.getElementById(id);
+  const el = document.getElementById(id);
   if (el.paused) return;
-  const start = el.volume;
-  const steps = 18, dt = BGM_FADE / steps;
+  const startVol = el.volume || bgmTargetVol;
+  const dt = BGM_FADE_MS / BGM_FADE_STEPS;
   let i = 0;
   const t = setInterval(() => {
     i++;
-    el.volume = Math.max(0, start * (1 - i / steps));
-    if (i >= steps) { clearInterval(t); el.pause(); el.volume = bgmGetVol(); }
+    el.volume = Math.max(0, startVol * (1 - i / BGM_FADE_STEPS));
+    if (i >= BGM_FADE_STEPS) { clearInterval(t); el.pause(); el.volume = bgmTargetVol; }
   }, dt);
 }
 
 function bgmAutoStart() {
+  bgmTargetVol = parseFloat(document.getElementById('bgmVol').value);
   const normal = document.getElementById('bgmNormal');
-  normal.volume = bgmGetVol();
-
-  // 자동 재생 시도
+  const focus  = document.getElementById('bgmFocus');
+  // 두 트랙 모두 미리 버퍼링
+  focus.load();
+  normal.volume = bgmTargetVol;
   normal.play().then(() => {
     bgmOn = true;
     bgmSetBtn(true);
   }).catch(() => {
-    // 브라우저가 autoplay 차단 → 첫 인터랙션 시 시작
-    bgmSetBtn(false); // 🔇 로 표시해서 유저에게 알림
+    // autoplay 차단 → 첫 터치/클릭 시 시작
     const startOnInteract = () => {
-      normal.volume = bgmGetVol();
+      normal.volume = bgmTargetVol;
       normal.play().then(() => {
         bgmOn = true;
         bgmSetBtn(true);
